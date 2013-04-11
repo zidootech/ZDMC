@@ -85,6 +85,9 @@ public:
   double AdjustHDMIClock(double adjust);
   double GetAdjustHDMIClock() { return m_last_pll_adjust; }
 
+  void SuspendVideoOutput();
+  void ResumeVideoOutput();
+
 private:
   DllBcmHost *m_DllBcmHost;
   bool       m_initialized;
