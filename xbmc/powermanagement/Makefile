@@ -1,6 +1,7 @@
 SRCS=DPMSSupport.cpp \
      PowerManager.cpp \
      IPowerSyscall.cpp \
+     PowerSyscallVirtualSleep.cpp \
 
 LIB=powermanagement.a
 
