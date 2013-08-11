@@ -31,6 +31,7 @@
 #include "guilib/GUIWindow.h"
 #include "guilib/GUIWindowManager.h"
 #include "guilib/GUIMessage.h"
+#include "powermanagement/PowerManager.h"
 
 #ifdef HAS_EVENT_SERVER
 #include "network/EventServer.h"
@@ -453,6 +454,13 @@ bool CInputManager::OnKey(const CKey& key)
   // this will be checked for certain keycodes that need
   // special handling if the screensaver is active
   CAction action = CButtonTranslator::GetInstance().GetAction(iWin, key);
+
+  // give the PowerManager a chance to process a keypress, and
+  // suppress further processing. we need this for virtual sleep.
+  if (g_powerManager.ProcessAction(action))
+  {
+    return true;
+  }
 
   // a key has been pressed.
   // reset Idle Timer

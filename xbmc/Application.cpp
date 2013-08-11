@@ -1959,7 +1959,6 @@ void CApplication::SetStandAlone(bool value)
   g_advancedSettings.m_handleMounting = m_bStandalone = value;
 }
 
-
 // OnAppCommand is called in response to a XBMC_APPCOMMAND event.
 // This needs to return true if it processed the appcommand or false if it didn't
 bool CApplication::OnAppCommand(const CAction &action)
