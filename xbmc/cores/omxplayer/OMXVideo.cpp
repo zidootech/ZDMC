@@ -30,6 +30,7 @@
 #include "linux/XMemUtils.h"
 #include "DVDDemuxers/DVDDemuxUtils.h"
 #include "settings/AdvancedSettings.h"
+#include "filesystem/SpecialProtocol.h"
 #include "settings/MediaSettings.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
 #include "xbmc/guilib/GraphicContext.h"
@@ -64,6 +65,49 @@
 #define OMX_MJPEG_DECODER       OMX_VIDEO_DECODER
 
 #define MAX_TEXT_LENGTH 1024
+
+//#define DEBUG_PLAYBACK
+static void dump_omx_buffer(OMX_BUFFERHEADERTYPE *omx_buffer)
+{
+  if (!(g_advancedSettings.CanLogComponent(LOGDUMPVIDEO)))
+    return;
+  static FILE *fp;
+  if (!omx_buffer)
+  {
+    if (fp)
+    {
+      fclose(fp);
+      fp = NULL;
+    }
+    return;
+  }
+  if (!fp)
+  {
+    char filename[1024];
+    strcpy(filename, CSpecialProtocol::TranslatePath("special://logpath").c_str());
+    strcat(filename, "video.dat");
+#ifdef DEBUG_PLAYBACK
+    fp = fopen(filename, "rb");
+#else
+    fp = fopen(filename, "wb");
+#endif
+    }
+  if (fp)
+  {
+#ifdef DEBUG_PLAYBACK
+    OMX_BUFFERHEADERTYPE omx = {0};
+    int s = fread(&omx, sizeof omx, 1, fp);
+    omx_buffer->nFilledLen = omx.nFilledLen;
+    omx_buffer->nFlags = omx.nFlags;
+    omx_buffer->nTimeStamp = omx.nTimeStamp;
+    if (s==1)
+      fread(omx_buffer->pBuffer, omx_buffer->nFilledLen, 1, fp);
+#else
+    if (fwrite(omx_buffer, sizeof *omx_buffer, 1, fp) == 1)
+      fwrite(omx_buffer->pBuffer, omx_buffer->nFilledLen, 1, fp);
+#endif
+  }
+}
 
 COMXVideo::COMXVideo(CRenderManager& renderManager, CProcessInfo &processInfo) : m_video_codec_name("")
 , m_renderManager(renderManager)
@@ -116,6 +160,7 @@ bool COMXVideo::SendDecoderConfig()
     memcpy((unsigned char *)omx_buffer->pBuffer, m_extradata, omx_buffer->nFilledLen);
     omx_buffer->nFlags = OMX_BUFFERFLAG_CODECCONFIG | OMX_BUFFERFLAG_ENDOFFRAME;
   
+    dump_omx_buffer(omx_buffer);
     omx_err = m_omx_decoder.EmptyThisBuffer(omx_buffer);
     if (omx_err != OMX_ErrorNone)
     {
@@ -687,6 +732,7 @@ bool COMXVideo::Open(CDVDStreamInfo &hints, OMXClock *clock, bool hdmi_clock_syn
 void COMXVideo::Close()
 {
   CSingleLock lock (m_critSection);
+  dump_omx_buffer(NULL);
   m_omx_tunnel_clock.Deestablish();
   m_omx_tunnel_decoder.Deestablish();
   if(m_deinterlace)
@@ -805,6 +851,7 @@ int COMXVideo::Decode(uint8_t *pData, int iSize, double dts, double pts, bool &s
       if(demuxer_bytes == 0)
         omx_buffer->nFlags |= OMX_BUFFERFLAG_ENDOFFRAME;
 
+      dump_omx_buffer(omx_buffer);
       omx_err = m_omx_decoder.EmptyThisBuffer(omx_buffer);
       if (omx_err != OMX_ErrorNone)
       {
@@ -933,6 +980,7 @@ void COMXVideo::SubmitEOS()
 
   omx_buffer->nFlags = OMX_BUFFERFLAG_ENDOFFRAME | OMX_BUFFERFLAG_EOS | OMX_BUFFERFLAG_TIME_UNKNOWN;
   
+  dump_omx_buffer(omx_buffer);
   omx_err = m_omx_decoder.EmptyThisBuffer(omx_buffer);
   if (omx_err != OMX_ErrorNone)
   {
