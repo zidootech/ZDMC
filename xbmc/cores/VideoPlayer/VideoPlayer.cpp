@@ -85,11 +85,67 @@
 #include "cores/DataCacheCore.h"
 #include "windowing/WindowingFactory.h"
 #include "DVDCodecs/DVDCodecUtils.h"
+#include "filesystem/SpecialProtocol.h"
 
 #include <iterator>
 
 using namespace PVR;
 using namespace KODI::MESSAGING;
+
+//#define DEBUG_PLAYBACK
+static void dump_packet(DemuxPacket *packet, bool video, bool audio)
+{
+  static CCriticalSection m_section;
+  static FILE *fp_video, *fp_audio;
+  if ((!video || !g_advancedSettings.CanLogComponent(LOGDUMPVIDEO)) &&
+      (!audio || !g_advancedSettings.CanLogComponent(LOGDUMPAUDIO)))
+    return;
+  const char *fname = video ? "video.dat" : "audio.dat";
+  FILE *&fp = video ? fp_video : fp_audio;
+  CSingleLock lock(m_section);
+  if (!packet)
+  {
+    if (fp)
+    {
+      CLog::Log(LOGNOTICE, "%s:: Closing file %p", __func__, fp);
+      fclose(fp);
+      fp = NULL;
+    }
+    return;
+  }
+  if (!fp)
+  {
+    char filename[1024];
+    strcpy(filename, CSpecialProtocol::TranslatePath("special://logpath").c_str());
+    strcat(filename, fname);
+#ifdef DEBUG_PLAYBACK
+    fp = fopen(filename, "rb");
+#else
+    fp = fopen(filename, "wb");
+#endif
+    CLog::Log(LOGNOTICE, "%s:: Opening file %s = %p", __func__, filename, fp);
+  }
+  if (fp)
+  {
+#ifdef DEBUG_PLAYBACK
+    DemuxPacket p = {0};
+    int s = fread(&p, sizeof p, 1, fp);
+    if (s==1)
+    {
+      packet->iSize = p.iSize;
+      packet->dts = p.dts;
+      packet->pts = p.pts;
+      _aligned_free(packet->pData);
+      packet->pData = (uint8_t*)_aligned_malloc(packet->iSize + FF_INPUT_BUFFER_PADDING_SIZE, 16);
+      fread(packet->pData, packet->iSize, 1, fp);
+    }
+#else
+    if (fwrite(packet, sizeof *packet, 1, fp) == 1)
+      fwrite(packet->pData, packet->iSize, 1, fp);
+#endif
+  }
+}
+
 
 void CSelectionStreams::Clear(StreamType type, StreamSource source)
 {
@@ -1086,6 +1142,12 @@ bool CVideoPlayer::ReadPacket(DemuxPacket*& packet, CDemuxStream*& stream)
         return true;
     }
 
+    if(m_pDemuxer)
+    {
+      stream = m_pDemuxer->GetStream(packet->demuxerId, packet->iStreamId);
+      if (stream)
+        dump_packet(packet, CheckIsCurrent(m_CurrentVideo, stream, packet), CheckIsCurrent(m_CurrentAudio, stream, packet));
+    }
     UpdateCorrection(packet, m_offset_pts);
 
     if(packet->iStreamId < 0)
@@ -3871,6 +3933,8 @@ bool CVideoPlayer::CloseStream(CCurrentStream& current, bool bWaitForBuffers)
 
   if (m_pDemuxer && STREAM_SOURCE_MASK(current.source) == STREAM_SOURCE_DEMUX)
     m_pDemuxer->EnableStream(current.demuxerId, current.id, false);
+
+  dump_packet(NULL, current.player == VideoPlayer_VIDEO, current.player == VideoPlayer_AUDIO);
 
   IDVDStreamPlayer* player = GetStreamPlayer(current.player);
   if(player)
