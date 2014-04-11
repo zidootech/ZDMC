@@ -3064,6 +3064,10 @@ msgctxt "#681"
 msgid "Verbose logging for the [B]Webserver[/B] component"
 msgstr ""
 
+msgctxt "#697"
+msgid "Verbose logging for OMXPLAYER"
+msgstr ""
+
 #empty strings from id 682 to 699
 
 msgctxt "#700"
