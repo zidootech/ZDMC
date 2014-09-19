@@ -82,6 +82,8 @@ public:
   uint32_t WaitVsync(uint32_t target = ~0U);
   void VSyncCallback();
   int GetMBox() { return m_mb; }
+  double AdjustHDMIClock(double adjust);
+  double GetAdjustHDMIClock() { return m_last_pll_adjust; }
 
 private:
   DllBcmHost *m_DllBcmHost;
@@ -107,6 +109,7 @@ private:
   int m_x;
   int m_y;
   bool m_enabled;
+  double m_last_pll_adjust;
   public:
   void init_cursor();
   void set_cursor(const void *pixels, int width, int height, int hotspot_x, int hotspot_y);
