@@ -19663,6 +19663,20 @@ msgctxt "#38190"
 msgid "Extract thumbnails from video files"
 msgstr ""
 
+msgctxt "#38191"
+msgid "Audio output latency"
+msgstr ""
+
+#: system/settings/rbp.xml
+msgctxt "#38192"
+msgid "Increase this to protect against underruns, reduce to have lower latency gui sounds"
+msgstr ""
+
+#: system/settings/rbp.xml
+msgctxt "#38193"
+msgid "%i ms"
+msgstr ""
+
 #. Description of setting "System -> Audio Ouput -> A/V sync method" with label #38200
 #: system/settings/settings.xml
 msgctxt "#38200"
