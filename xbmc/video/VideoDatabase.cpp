@@ -8313,6 +8313,8 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
       }
     }
 
+    std::string skippedFiles;
+    std::string filesToDelete;
     std::string filesToTestForDelete;
     VECSOURCES videoSources(*CMediaSourceSettings::GetInstance().GetSources("video"));
     g_mediaManager.GetRemovableDrives(videoSources);
@@ -8335,10 +8337,14 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
       if (URIUtils::IsInArchive(fullPath))
         fullPath = CURL(fullPath).GetHostName();
 
-      // remove optical, non-existing files, files with no matching source
+      // skip checking plugins and http paths that don't belong to a media source
       bool bIsSource;
-      if (URIUtils::IsOnDVD(fullPath) || !CFile::Exists(fullPath, false) ||
-          CUtil::GetMatchingSource(fullPath, videoSources, bIsSource) < 0)
+      bool sourceNotFound = (CUtil::GetMatchingSource(path, videoSources, bIsSource) < 0);
+      if (URIUtils::IsPlugin(fullPath) || (sourceNotFound && URIUtils::IsHTTP(fullPath)))
+        skippedFiles += m_pDS->fv("files.idFile").get_asString() + ",";
+
+      // remove optical, non-existing files, files with no matching source
+      if (URIUtils::IsOnDVD(fullPath) || !CFile::Exists(fullPath, false) || sourceNotFound)
         filesToTestForDelete += m_pDS->fv("files.idFile").get_asString() + ",";
 
       if (handle == NULL && progress != NULL)
@@ -8365,7 +8371,22 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
     }
     m_pDS->close();
 
-    std::string filesToDelete;
+    // files were skipped while checking - ask the user whether to remove them
+    if (showProgress && !skippedFiles.empty())
+    {
+      CGUIDialogYesNo* pDialog = (CGUIDialogYesNo*)g_windowManager.GetWindow(WINDOW_DIALOG_YES_NO);
+      if (pDialog != NULL)
+      {
+        pDialog->SetHeading(CVariant{15010});
+        pDialog->SetText(CVariant{15017});
+        pDialog->SetChoice(0, CVariant{15015});
+        pDialog->SetChoice(1, CVariant{15014});
+        pDialog->Open();
+
+        if (!pDialog->IsConfirmed())
+          filesToDelete = skippedFiles;
+      }
+    }
 
     // Add any files that don't have a valid idPath entry to the filesToDelete list.
     m_pDS->query("SELECT files.idFile FROM files WHERE NOT EXISTS (SELECT 1 FROM path WHERE path.idPath = files.idPath)");

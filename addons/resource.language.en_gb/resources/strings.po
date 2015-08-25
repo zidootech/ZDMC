@@ -7898,7 +7898,12 @@ msgctxt "#15016"
 msgid "Games"
 msgstr ""
 
-#empty strings from id 15017 to 15018
+#: xbmc/video/VideoDatabase.cpp
+msgctxt "#15017"
+msgid "What would you like to do with items from addons?"
+msgstr ""
+
+#empty string from id 15018
 
 msgctxt "#15019"
 msgid "Add"
