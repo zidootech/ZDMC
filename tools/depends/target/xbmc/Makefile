@@ -5,8 +5,8 @@ APP_NAME=$(shell awk '/APP_NAME/ {print tolower($$2)}' $(VERSION.TXT))
 
 SOURCE=../../../../
 
-export CXXFLAGS+=-O3
-export CFLAGS+=-O3
+#export CXXFLAGS+=-O3
+#export CFLAGS+=-O3
 
 # configuration settings
 CONFIGURE = cp -f $(CONFIG_SUB) $(CONFIG_GUESS) build-aux/ ;\
