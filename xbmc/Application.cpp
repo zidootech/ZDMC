@@ -3248,10 +3248,22 @@ PlayBackRet CApplication::PlayFile(CFileItem item, const std::string& player, bo
         // Can't do better as CGUIDialogPlayEject calls CMediaManager::IsDiscInDrive, which assumes default DVD drive anyway
         return MEDIA_DETECT::CAutorun::PlayDiscAskResume() ? PLAYBACK_OK : PLAYBACK_FAIL;
     }
-    else
 #endif
-      CGUIDialogOK::ShowAndGetInput(CVariant{435}, CVariant{436});
-
+    // Figure out Lines 1 and 2 of the dialog
+    std::string strLine1, strLine2;
+    CXBMCTinyXML discStubXML;
+    if (discStubXML.LoadFile(item.GetPath()))
+    {
+      TiXmlElement * pRootElement = discStubXML.RootElement();
+      if (!pRootElement || strcmpi(pRootElement->Value(), "discstub") != 0)
+        CLog::Log(LOGERROR, "Error loading %s, no <discstub> node", item.GetPath().c_str());
+      else
+      {
+        XMLUtils::GetString(pRootElement, "title", strLine1);
+        XMLUtils::GetString(pRootElement, "message", strLine2);
+      }
+    }
+    CGUIDialogOK::ShowAndGetInput(strLine1, strLine2);
     return PLAYBACK_OK;
   }
 
