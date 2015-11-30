@@ -1663,6 +1663,8 @@ void CVideoPlayer::ProcessPacket(CDemuxStream* pStream, DemuxPacket* pPacket)
   // process packet if it belongs to selected stream.
   // for dvd's don't allow automatic opening of streams*/
 
+  CLog::Log(LOGDEBUG, "%s - audio:%d video:%d", __FUNCTION__, m_VideoPlayerAudio->GetLevel(), m_VideoPlayerVideo->GetLevel());
+
   if (CheckIsCurrent(m_CurrentAudio, pStream, pPacket))
     ProcessAudioData(pStream, pPacket);
   else if (CheckIsCurrent(m_CurrentVideo, pStream, pPacket))
