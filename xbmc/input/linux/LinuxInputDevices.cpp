@@ -1070,6 +1070,9 @@ void CLinuxInputDevice::GetInfo(int fd)
   //printf("type: %d\n", m_deviceType);
   //printf("caps: %d\n", m_deviceCaps);
   //printf("pref: %d\n", m_devicePreferredId);
+
+  CLog::Log(LOGNOTICE, "%s: keys:%d ext:%d but:%d rel:%d abs:%d m_deviceType:%x bits:%d%d%d%d%d%d", m_deviceName, num_keys, num_ext_keys, num_buttons, num_rels, num_abs, m_deviceType,
+      (int)test_bit( EV_KEY, evbit ), (int)test_bit( EV_REL, evbit ), (int)test_bit( EV_ABS, evbit ), (int)test_bit( BTN_TOUCH, keybit ), (int)test_bit( BTN_TOOL_FINGER, keybit ), (int)test_bit(ABS_MT_SLOT, absbit));
 }
 
 const std::string& CLinuxInputDevice::GetFileName()
