@@ -91,7 +91,7 @@ bool CTextureCacheJob::CacheTexture(CBaseTexture **out_texture)
     return true;
 
 #if defined(HAS_OMXPLAYER)
-  if (COMXImage::CreateThumb(image, width, height, additional_info, CTextureCache::GetCachedPath(m_cachePath + ".jpg")))
+  if (CSettings::GetInstance().GetBool("videoplayer.acceleratedjpegs") && COMXImage::CreateThumb(image, width, height, additional_info, CTextureCache::GetCachedPath(m_cachePath + ".jpg")))
   {
     m_details.width = width;
     m_details.height = height;
