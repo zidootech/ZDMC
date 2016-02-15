@@ -85,6 +85,7 @@ public:
   double AdjustHDMIClock(double adjust);
   double GetAdjustHDMIClock() { return m_last_pll_adjust; }
   int GenCmd(char *response, int maxlen, const char *string);
+  CCriticalSection &GetLock() { return m_critSection; }
 
   void SuspendVideoOutput();
   void ResumeVideoOutput();
