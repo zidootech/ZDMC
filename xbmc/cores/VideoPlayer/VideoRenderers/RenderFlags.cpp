@@ -104,6 +104,8 @@ namespace RenderManager {
       convert["anaglyph_yellow_blue"]   = 0u;
       convert["block_lr"]               = 0u;
       convert["block_rl"]               = 0u;
+      convert["mvc_lr"]                 = 0u;
+      convert["mvc_rl"]                 = 0u;
     }
     return convert[mode];
   }
@@ -125,6 +127,8 @@ namespace RenderManager {
       convert["col_interleaved_lr"]     = "col_interleaved_rl";
       convert["block_lr"]               = "block_lr";
       convert["block_rl"]               = "block_rl";
+      convert["mvc_lr"]                 = "mvc_rl";
+      convert["mvc_rl"]                 = "mvc_lr";
     }
     std::string res = convert[mode];
     if(res.empty())
