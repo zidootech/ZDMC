@@ -35,6 +35,9 @@
 #include "settings/AdvancedSettings.h"
 #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
 
+extern "C" {
+#include "libavformat/version.h"
+}
 
 CBaseRenderer::CBaseRenderer()
 {
@@ -369,6 +372,21 @@ void CBaseRenderer::CalculateFrameAspectRatio(unsigned int desired_width, unsign
     if (m_sourceHeight == 576) // PAL
       m_sourceFrameRatio = imageFrameRatio * PALPixelRatio * Non4by3Correction;
   }
+#if (LIBAVFORMAT_VERSION_MAJOR >= 57)
+  bool isAnamorph = m_sourceWidth <= 1920 && m_sourceHeight <= 1080;
+  float factor = isAnamorph ? 2.0f : 4.0f;
+  switch (CONF_FLAGS_STEREO_MODE_MASK(m_iFlags))
+  {
+  case CONF_FLAGS_STEREO_MODE_TAB:
+    m_sourceFrameRatio *= factor;
+    break;
+  case CONF_FLAGS_STEREO_MODE_SBS:
+    m_sourceFrameRatio /= factor;
+    break;
+  default:
+    break;
+  }
+#endif
 }
 
 void CBaseRenderer::ManageRenderArea()
