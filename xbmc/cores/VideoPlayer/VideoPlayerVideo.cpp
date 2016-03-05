@@ -232,6 +232,7 @@ void CVideoPlayerVideo::CloseStream(bool bWaitForBuffers)
     CDVDCodecUtils::FreePicture(m_pTempOverlayPicture);
     m_pTempOverlayPicture = NULL;
   }
+  CLog::Log(LOGDEBUG, "CVideoPlayerVideo::CloseStream - drop:%d skip:%d", m_iDroppedFrames, m_renderManager.GetSkippedFrames());
 }
 
 bool CVideoPlayerVideo::AcceptsData() const
