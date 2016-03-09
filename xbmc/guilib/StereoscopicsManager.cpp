@@ -72,8 +72,10 @@ static const struct StereoModeMap VideoModeToGuiModeMap[] =
   { "anaglyph_yellow_blue",     RENDER_STEREO_MODE_ANAGLYPH_YELLOW_BLUE },
   { "block_lr",                 RENDER_STEREO_MODE_OFF }, // unsupported
   { "block_rl",                 RENDER_STEREO_MODE_OFF }, // unsupported
+#ifndef TARGET_RASPBERRY_PI
   { "mvc_lr",                   RENDER_STEREO_MODE_HARDWAREBASED }, 
   { "mvc_rl",                   RENDER_STEREO_MODE_HARDWAREBASED },
+#endif
   { "mvc_lr",                   RENDER_STEREO_MODE_SPLIT_HORIZONTAL }, // fallback
   { "mvc_rl",                   RENDER_STEREO_MODE_SPLIT_HORIZONTAL }, // fallback
   {}
