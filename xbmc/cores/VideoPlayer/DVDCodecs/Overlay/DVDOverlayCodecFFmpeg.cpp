@@ -243,20 +243,20 @@ CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
       }
     }
 
-    RENDER_STEREO_MODE render_stereo_mode = g_graphicsContext.GetStereoMode();
+    /*RENDER_STEREO_MODE render_stereo_mode = g_graphicsContext.GetStereoMode();
     if (render_stereo_mode != RENDER_STEREO_MODE_OFF)
     {
-      if (rect.h > m_height / 2)
+      if ((rect.h - rect.y) > m_height / 2)
       {
         m_height /= 2;
         rect.h /= 2;
       }
-      else if (rect.w > m_width / 2)
+      else if ((rect.w - rect.x) > m_width / 2)
       {
         m_width /= 2;
         rect.w /= 2;
       }
-    }
+    }*/
 
     CDVDOverlayImage* overlay = new CDVDOverlayImage();
 
@@ -290,6 +290,7 @@ CDVDOverlay* CDVDOverlayCodecFFmpeg::GetOverlay()
 
     m_SubtitleIndex++;
 
+    CLog::Log(LOGDEBUG, "Overlay: x:%d y:%d w:%d h:%d", overlay->x, overlay->y, overlay->width, overlay->height);
     return overlay;
   }
 
