@@ -103,6 +103,15 @@ private:
   CCriticalSection m_critSection;
 
   int m_mb;
+  CGPUMEM *m_p;
+  int m_x;
+  int m_y;
+  bool m_enabled;
+  public:
+  void init_cursor();
+  void set_cursor(const void *pixels, int width, int height, int hotspot_x, int hotspot_y);
+  void update_cursor(int x, int y, bool enabled);
+  void uninit_cursor();
 };
 
 extern CRBP g_RBP;

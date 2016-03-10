@@ -199,7 +199,9 @@ void CGUIWindowManager::CreateWindows()
   Add(new CGUIWindowAddonBrowser);
   Add(new CGUIWindowScreensaverDim);
   Add(new CGUIWindowDebugInfo);
+#ifndef TARGET_RASPBERRY_PI
   Add(new CGUIWindowPointer);
+#endif
   Add(new CGUIDialogYesNo);
   Add(new CGUIDialogProgress);
   Add(new CGUIDialogExtendedProgressBar);
