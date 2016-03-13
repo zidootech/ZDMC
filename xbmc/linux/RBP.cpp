@@ -459,6 +459,7 @@ const static uint32_t default_cursor_pixels[] =
 
 void CRBP::init_cursor()
 {
+  CLog::Log(LOGDEBUG, "%s", __FUNCTION__);
   if (!m_mb)
     return;
   if (!m_p)
@@ -471,6 +472,7 @@ void CRBP::set_cursor(const void *pixels, int width, int height, int hotspot_x, 
 {
   if (!m_mb || !m_p || !m_p->m_arm || !m_p->m_vc || !pixels || width * height > 64 * 64)
     return;
+  CLog::Log(LOGDEBUG, "%s %dx%d %p", __FUNCTION__, width, height, pixels);
   memcpy(m_p->m_arm, pixels, width * height * 4);
   unsigned int s = mailbox_set_cursor_info(m_mb, width, height, 0, m_p->m_vc, hotspot_x, hotspot_y);
   assert(s == 0);
@@ -503,6 +505,7 @@ void CRBP::uninit_cursor()
 {
   if (!m_mb || !m_p || !m_p->m_arm || !m_p->m_vc)
     return;
+  CLog::Log(LOGDEBUG, "%s", __FUNCTION__);
   mailbox_set_cursor_position(m_mb, 0, 0, 0);
 }
 
