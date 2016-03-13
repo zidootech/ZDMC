@@ -75,7 +75,8 @@ externalproject_add(ffmpeg
                       --enable-protocol=http
                       --enable-encoder=png
                       --enable-encoder=mjpeg
-                      ${ffmpeg_conf})
+                      ${ffmpeg_conf}
+                    PATCH_COMMAND patch -p1 -i /home/dc4/xbmc_holder/xbmc/tools/depends/target/ffmpeg/cmake_patches.patch)
 
 install(CODE "Message(Done)")
 
