@@ -1,0 +1,21 @@
+commit 49a1728feabca68b8424a8b22abec9ee87b9aa99
+Author: Lars Op den Kamp <lars@opdenkamp.eu>
+Date:   Wed Jan 20 01:06:50 2016 +0100
+
+    bump to 3.1.0
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 23d71fc..173f625 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,8 +2,8 @@ project(libcec)
+ cmake_minimum_required(VERSION 2.8.9)
+ 
+ set(LIBCEC_VERSION_MAJOR 3)
+-set(LIBCEC_VERSION_MINOR 0)
+-set(LIBCEC_VERSION_PATCH 0)
++set(LIBCEC_VERSION_MINOR 1)
++set(LIBCEC_VERSION_PATCH 0)
+ 
+ # cec-client
+ add_subdirectory(src/cec-client)
