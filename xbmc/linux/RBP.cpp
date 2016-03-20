@@ -73,6 +73,11 @@ void CRBP::InitializeSettings()
     g_advancedSettings.m_cacheMemSize = m_arm_mem < 256 ? 1024 * 1024 * 2 : 1024 * 1024 * 20;
 }
 
+int CRBP::GenCmd(char *response, int maxlen, const char *string)
+{
+  return m_DllBcmHost->vc_gencmd(response, maxlen, string);
+}
+
 bool CRBP::Initialize()
 {
   CSingleLock lock(m_critSection);
@@ -95,14 +100,14 @@ bool CRBP::Initialize()
   m_codec_mpg2_enabled = false;
   m_codec_wvc1_enabled = false;
 
-  if (vc_gencmd(response, sizeof response, "get_mem arm") == 0)
+  if (GenCmd(response, sizeof response, "get_mem arm") == 0)
     vc_gencmd_number_property(response, "arm", &m_arm_mem);
-  if (vc_gencmd(response, sizeof response, "get_mem gpu") == 0)
+  if (GenCmd(response, sizeof response, "get_mem gpu") == 0)
     vc_gencmd_number_property(response, "gpu", &m_gpu_mem);
 
-  if (vc_gencmd(response, sizeof response, "codec_enabled MPG2") == 0)
+  if (GenCmd(response, sizeof response, "codec_enabled MPG2") == 0)
     m_codec_mpg2_enabled = strcmp("MPG2=enabled", response) == 0;
-  if (vc_gencmd(response, sizeof response, "codec_enabled WVC1") == 0)
+  if (GenCmd(response, sizeof response, "codec_enabled WVC1") == 0)
     m_codec_wvc1_enabled = strcmp("WVC1=enabled", response) == 0;
 
   if (m_gpu_mem < 128)
@@ -125,15 +130,15 @@ bool CRBP::Initialize()
 void CRBP::LogFirmwareVerison()
 {
   char  response[1024];
-  m_DllBcmHost->vc_gencmd(response, sizeof response, "version");
+  GenCmd(response, sizeof response, "version");
   response[sizeof(response) - 1] = '\0';
   CLog::Log(LOGNOTICE, "Raspberry PI firmware version: %s", response);
   CLog::Log(LOGNOTICE, "ARM mem: %dMB GPU mem: %dMB MPG2:%d WVC1:%d", m_arm_mem, m_gpu_mem, m_codec_mpg2_enabled, m_codec_wvc1_enabled);
   CLog::Log(LOGNOTICE, "cache.memorysize: %dMB",  g_advancedSettings.m_cacheMemSize >> 20);
-  m_DllBcmHost->vc_gencmd(response, sizeof response, "get_config int");
+  GenCmd(response, sizeof response, "get_config int");
   response[sizeof(response) - 1] = '\0';
   CLog::Log(LOGNOTICE, "Config:\n%s", response);
-  m_DllBcmHost->vc_gencmd(response, sizeof response, "get_config str");
+  GenCmd(response, sizeof response, "get_config str");
   response[sizeof(response) - 1] = '\0';
   CLog::Log(LOGNOTICE, "Config:\n%s", response);
 }
@@ -293,13 +298,13 @@ void CRBP::SuspendVideoOutput()
 {
   CLog::Log(LOGDEBUG, "Raspberry PI suspending video output\n");
   char response[80];
-  m_DllBcmHost->vc_gencmd(response, sizeof response, "display_power 0");
+  GenCmd(response, sizeof response, "display_power 0");
 }
 
 void CRBP::ResumeVideoOutput()
 {
   char response[80];
-  m_DllBcmHost->vc_gencmd(response, sizeof response, "display_power 1");
+  GenCmd(response, sizeof response, "display_power 1");
   CLog::Log(LOGDEBUG, "Raspberry PI resuming video output\n");
 }
 
@@ -528,8 +533,9 @@ void CRBP::uninit_cursor()
 
 double CRBP::AdjustHDMIClock(double adjust)
 {
-  char response[80];
-  vc_gencmd(response, sizeof response, "hdmi_adjust_clock %f", adjust);
+  char command[80], response[80];
+  sprintf(command, "hdmi_adjust_clock %f", adjust);
+  GenCmd(response, sizeof response, command);
   char *p = strchr(response, '=');
   if (p)
     m_last_pll_adjust = atof(p+1);
