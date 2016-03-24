@@ -82,6 +82,7 @@ public:
   bool CanSuspend();
   bool CanHibernate();
   bool CanReboot();
+  bool IsSuspending() { return m_suspended; }
   
   int  BatteryLevel();
 
@@ -97,6 +98,7 @@ private:
   void OnLowBattery();
 
   IPowerSyscall *m_instance;
+  bool m_suspended;
 };
 
 extern CPowerManager g_powerManager;

@@ -65,6 +65,7 @@ CPowerManager g_powerManager;
 CPowerManager::CPowerManager()
 {
   m_instance = NULL;
+  m_suspended = false;
 }
 
 CPowerManager::~CPowerManager()
@@ -273,18 +274,19 @@ void CPowerManager::OnSleep()
   g_application.StopScreenSaverTimer();
   g_application.CloseNetworkShares();
   CAEFactory::Suspend();
+  if (dialog)
+    dialog->Close();
+
+  m_suspended = true;
 }
 
 void CPowerManager::OnWake()
 {
+  m_suspended = false;
   CLog::Log(LOGNOTICE, "%s: Running resume jobs", __FUNCTION__);
 
   // reset out timers
   g_application.ResetShutdownTimers();
-
-  CGUIDialogBusy* dialog = (CGUIDialogBusy*)g_windowManager.GetWindow(WINDOW_DIALOG_BUSY);
-  if (dialog)
-    dialog->Close();
 
 #if defined(HAS_SDL) || defined(TARGET_WINDOWS)
   if (g_Windowing.IsFullScreen())

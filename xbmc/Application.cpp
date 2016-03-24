@@ -5241,6 +5241,6 @@ bool CApplication::ScreenSaverDisablesAutoScrolling()
     (m_screenSaver->ID() == "screensaver.xbmc.builtin.black" ||
      m_screenSaver->ID() == "screensaver.xbmc.builtin.dim");
   bool openingStreams = m_pPlayer->IsPlaying() && g_windowManager.IsWindowActive(WINDOW_DIALOG_BUSY);
-
-  return onBlackDimScreenSaver || openingStreams;
+  bool suspending = g_powerManager.IsSuspending();
+  return onBlackDimScreenSaver || openingStreams || suspending;
 }
