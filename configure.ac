@@ -945,8 +945,8 @@ if test "$use_gles" = "yes"; then
       AC_MSG_RESULT(== WARNING: OpenGLES support is assumed.)
       LIBS="$LIBS -lbrcmEGL -lbrcmGLESv2 -lbcm_host -lvcos -lvchiq_arm -lmmal -lmmal_core -lmmal_util -lvcsm"
     else
-      AC_CHECK_LIB([EGL],   [main],, AC_MSG_ERROR($missing_library))
       AC_CHECK_LIB([GLESv2],[main],, AC_MSG_ERROR($missing_library))
+      AC_CHECK_LIB([EGL],   [main],, AC_MSG_ERROR($missing_library))
     fi
   fi
 else
@@ -1731,6 +1731,10 @@ fi
 case $add_players in
   *omxplayer*)
       XB_ADD_PLAYER([OMXPLAYER], [omxplayer])
+      USE_OMXLIB=1; AC_DEFINE([HAVE_OMXLIB],[1],["Define to 1 if OMX libs is enabled"])
+      USE_MMAL=1; AC_DEFINE([HAS_MMAL],[1],["Define to 1 if MMAL libs is enabled"])
+      AC_DEFINE([TARGET_RASPBERRY_PI],[1],["Define to 1 for RASPBERRY_PI"])
+      LIBS="$LIBS -lbcm_host -lvcos -lvchiq_arm -lmmal_vc_client -lmmal -lmmal_core -lmmal_util -lvcsm"
       CORE_SYSTEM_VARIANT=omx
       ;;
 esac
