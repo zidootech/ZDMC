@@ -102,10 +102,8 @@ namespace RenderManager {
       convert["right_left"]             = CONF_FLAGS_STEREO_MODE_SBS | CONF_FLAGS_STEREO_CADANCE_RIGHT_LEFT;
       convert["anaglyph_green_magenta"] = 0u;
       convert["anaglyph_yellow_blue"]   = 0u;
-      convert["block_lr"]               = 0u;
-      convert["block_rl"]               = 0u;
-      convert["mvc_lr"]                 = 0u;
-      convert["mvc_rl"]                 = 0u;
+      convert["block_lr"]               = CONF_FLAGS_STEREO_CADANCE_LEFT_RIGHT;
+      convert["block_rl"]               = CONF_FLAGS_STEREO_CADANCE_RIGHT_LEFT;
     }
     return convert[mode];
   }
@@ -125,10 +123,8 @@ namespace RenderManager {
       convert["row_interleaved_lr"]     = "row_interleaved_rl";
       convert["col_interleaved_rl"]     = "col_interleaved_lr";
       convert["col_interleaved_lr"]     = "col_interleaved_rl";
-      convert["block_lr"]               = "block_lr";
-      convert["block_rl"]               = "block_rl";
-      convert["mvc_lr"]                 = "mvc_rl";
-      convert["mvc_rl"]                 = "mvc_lr";
+      convert["block_lr"]               = "block_rl";
+      convert["block_rl"]               = "block_lr";
     }
     std::string res = convert[mode];
     if(res.empty())

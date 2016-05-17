@@ -1443,7 +1443,7 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
                 CDVDInputStreamBluray *bluRay = static_cast<CDVDInputStreamBluray*>(m_pInput);
                 if (bluRay->HasMVC())
                 {
-                  st->stereo_mode = bluRay->AreEyesFlipped() ? "mvc_rl" : "mvc_lr";
+                  st->stereo_mode = bluRay->AreEyesFlipped() ? "block_rl" : "block_lr";
                   mvcStream = static_cast<CDVDDemuxMVC*>(bluRay->GetDemuxMVC())->GetAVStream();
                 }
               }
