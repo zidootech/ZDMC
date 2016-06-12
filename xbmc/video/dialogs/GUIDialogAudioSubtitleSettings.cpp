@@ -193,11 +193,7 @@ void CGUIDialogAudioSubtitleSettings::OnSettingAction(const CSetting *setting)
   CGUIDialogSettingsManualBase::OnSettingAction(setting);
   
   const std::string &settingId = setting->GetId();
-  if (settingId == SETTING_AUDIO_DSP)
-  {
-    g_windowManager.ActivateWindow(WINDOW_DIALOG_AUDIO_DSP_OSD_SETTINGS);
-  }
-  else if (settingId == SETTING_SUBTITLE_BROWSER)
+  if (settingId == SETTING_SUBTITLE_BROWSER)
   {
     std::string strPath;
     if (URIUtils::IsInRAR(g_application.CurrentFileItem().GetPath()) || URIUtils::IsInZIP(g_application.CurrentFileItem().GetPath()))
@@ -329,9 +325,6 @@ void CGUIDialogAudioSubtitleSettings::InitializeSettings()
   CSettingNumber *settingAudioVolume = AddSlider(groupAudio, SETTING_AUDIO_VOLUME, 13376, 0, m_volume, 14054, VOLUME_MINIMUM, VOLUME_MAXIMUM / 100.0f, VOLUME_MAXIMUM);
   settingAudioVolume->SetDependencies(depsAudioOutputPassthroughDisabled);
   static_cast<CSettingControlSlider*>(settingAudioVolume->GetControl())->SetFormatter(SettingFormatterPercentAsDecibel);
-
-  if (m_dspEnabled)
-    AddButton(groupAudio, SETTING_AUDIO_DSP, 24136, 0);
 
   // audio volume amplification setting
   if (SupportsAudioFeature(IPC_AUD_AMP) && !m_dspEnabled)
