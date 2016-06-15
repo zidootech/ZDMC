@@ -239,7 +239,7 @@ bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, boo
       if (m_processor->GetChannelLayout().Count() > 2)                    /* Disable upmix for CActiveAEResample if DSP layout > 2.0, becomes perfomed by DSP */
         upmix = false;
 
-      m_dspBuffer = new CActiveAEBufferPool(m_inputFormat);               /* Get dsp processing buffer class, based on dsp output format */
+      m_dspBuffer = new CActiveAEBufferPool(m_format);               /* Get dsp processing buffer class, based on dsp output format */
       m_dspBuffer->Create(totaltime);
     }
   }
@@ -254,7 +254,7 @@ bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, boo
    * kodi based resample processing.
    *
    * The input format can be become modified if addon dsp processing is enabled. For this
-   * reason somethings are no more required for it. As example, if resampling is performed
+   * reason some things are no more required for it. As example, if resampling is performed
    * by the addons it is no more required here, also the channel layout can be modified
    * from addons. The output data format from dsp is always float and if something other
    * is required here, the CActiveAEResample must change it.
