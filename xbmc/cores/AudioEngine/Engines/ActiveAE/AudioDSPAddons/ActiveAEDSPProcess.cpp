@@ -242,47 +242,24 @@ bool CActiveAEDSPProcess::Create(const AEAudioFormat &inputFormat, const AEAudio
   m_addonSettings.bInputResamplingActive  = false;                                /*! Becomes true if input resampling is in use */
   m_addonSettings.iQualityLevel           = m_streamQuality;                      /*! Requested stream processing quality, is optional and can be from addon ignored */
 
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_FL))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FL;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_FR))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FR;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_FC))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_LFE))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_LFE;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_BL))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BL;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_BR))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BR;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_FLOC)) m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FLOC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_FROC)) m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FROC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_BC))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_SL))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_SL;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_SR))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_SR;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TFL))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFL;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TFR))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFR;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TFC))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TC))   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TBL))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBL;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TBR))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBR;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_TBC))  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_BLOC)) m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BLOC;
-  if (m_inputFormat.m_channelLayout.HasChannel(AE_CH_BROC)) m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BROC;
+  /*! NOTE: If you change or add new channel enums to AEChannel in
+   * xbmc/cores/AudioEngine/Utils/AEChannelData.h you have to adapt this loop
+   */
+  for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
+  {
+    if (m_inputFormat.m_channelLayout.HasChannel((AEChannel)(ii + 1)))
+    {
+      m_addonSettings.lInChannelPresentFlags |= 1 << ii;
+    }
+  }
 
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_FL))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FL;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_FR))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FR;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_FC))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_LFE))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_LFE;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_BL))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BL;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_BR))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BR;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_FLOC)) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FLOC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_FROC)) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FROC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_BC))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_SL))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_SL;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_SR))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_SR;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TFL))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFL;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TFR))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFR;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TFC))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TC))   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TBL))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBL;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TBR))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBR;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_TBC))  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_BLOC)) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BLOC;
-  if (m_outputFormat.m_channelLayout.HasChannel(AE_CH_BROC)) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BROC;
+  for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
+  {
+    if (m_outputFormat.m_channelLayout.HasChannel((AEChannel)(ii + 1)))
+    {
+      m_addonSettings.lOutChannelPresentFlags |= 1 << ii;
+    }
+  }
 
   /*!
    * Setup off mode, used if dsp master processing is set off, required to have data
@@ -1187,50 +1164,29 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
 
   if (needDSPAddonsReinit)
   {
+    /*! NOTE: If you change or add new channel enums to AEChannel in
+     * xbmc/cores/AudioEngine/Utils/AEChannelData.h you have to adapt this loop
+     */
     m_addonSettings.lInChannelPresentFlags = 0;
-    if (m_idx_in[AE_CH_FL] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FL;
-    if (m_idx_in[AE_CH_FR] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FR;
-    if (m_idx_in[AE_CH_FC] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FC;
-    if (m_idx_in[AE_CH_LFE] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_LFE;
-    if (m_idx_in[AE_CH_BL] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BL;
-    if (m_idx_in[AE_CH_BR] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BR;
-    if (m_idx_in[AE_CH_FLOC] >= 0)  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FLOC;
-    if (m_idx_in[AE_CH_FROC] >= 0)  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_FROC;
-    if (m_idx_in[AE_CH_BC] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BC;
-    if (m_idx_in[AE_CH_SL] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_SL;
-    if (m_idx_in[AE_CH_SR] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_SR;
-    if (m_idx_in[AE_CH_TFL] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFL;
-    if (m_idx_in[AE_CH_TFR] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFR;
-    if (m_idx_in[AE_CH_TFC] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TFC;
-    if (m_idx_in[AE_CH_TC] >= 0)    m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TC;
-    if (m_idx_in[AE_CH_TBL] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBL;
-    if (m_idx_in[AE_CH_TBR] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBR;
-    if (m_idx_in[AE_CH_TBC] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBC;
-    if (m_idx_in[AE_CH_TBR] >= 0)   m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_TBR;
-    if (m_idx_in[AE_CH_BLOC] >= 0)  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BLOC;
-    if (m_idx_in[AE_CH_BROC] >= 0)  m_addonSettings.lInChannelPresentFlags |= AE_DSP_PRSNT_CH_BROC;
+    for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
+    {
+      if (m_idx_in[ii+1] >= 0)
+      {
+        m_addonSettings.lInChannelPresentFlags |= 1 << ii;
+      }
+    }
 
+    /*! NOTE: If you change or add new channel enums to AEChannel in
+     * xbmc/cores/AudioEngine/Utils/AEChannelData.h you have to adapt this loop
+     */
     m_addonSettings.lOutChannelPresentFlags = 0;
-    if (m_idx_out[AE_CH_FL] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FL;
-    if (m_idx_out[AE_CH_FR] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FR;
-    if (m_idx_out[AE_CH_FC] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FC;
-    if (m_idx_out[AE_CH_LFE] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_LFE;
-    if (m_idx_out[AE_CH_BL] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BL;
-    if (m_idx_out[AE_CH_BR] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BR;
-    if (m_idx_out[AE_CH_FLOC] >= 0) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FLOC;
-    if (m_idx_out[AE_CH_FROC] >= 0) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_FROC;
-    if (m_idx_out[AE_CH_BC] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BC;
-    if (m_idx_out[AE_CH_SL] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_SL;
-    if (m_idx_out[AE_CH_SR] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_SR;
-    if (m_idx_out[AE_CH_TFL] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFL;
-    if (m_idx_out[AE_CH_TFR] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFR;
-    if (m_idx_out[AE_CH_TFC] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TFC;
-    if (m_idx_out[AE_CH_TC] >= 0)   m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TC;
-    if (m_idx_out[AE_CH_TBL] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBL;
-    if (m_idx_out[AE_CH_TBR] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBR;
-    if (m_idx_out[AE_CH_TBC] >= 0)  m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_TBC;
-    if (m_idx_out[AE_CH_BLOC] >= 0) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BLOC;
-    if (m_idx_out[AE_CH_BROC] >= 0) m_addonSettings.lOutChannelPresentFlags |= AE_DSP_PRSNT_CH_BROC;
+    for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
+    {
+      if (m_idx_out[ii + 1] >= 0)
+      {
+        m_addonSettings.lOutChannelPresentFlags |= 1 << ii;
+      }
+    }
 
     m_addonSettings.iStreamID           = m_streamId;
     m_addonSettings.iInChannels         = in->pkt->config.channels;
@@ -1267,7 +1223,7 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
     /**
      * Setup ffmpeg convert array for input stream
      */
-    SetFFMpegDSPProcessorArray(m_ffMpegConvertArray, m_processArray[0], NULL);
+    SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], m_processArray[0], m_idx_in, m_addonSettings.lInChannelPresentFlags);
   }
 
   int64_t startTime;
@@ -1367,7 +1323,11 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
     startTime = CurrentHostCounter();
 
     if (needDSPAddonsReinit)
-      SetFFMpegDSPProcessorArray(m_ffMpegProcessArray, lastOutArray, m_processArray[togglePtr]);
+    {
+      // TODO: test this with an resampler add-on
+      SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], lastOutArray, m_idx_in, m_addonSettings.lInChannelPresentFlags);
+      SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], m_processArray[togglePtr], m_idx_out, m_addonSettings.lOutChannelPresentFlags);
+    }
 
     frames = m_resamplerDSPProcessor->Resample((uint8_t**)m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_OUT], frames, (uint8_t**)m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_IN], frames, 1.0);
     if (frames <= 0)
@@ -1425,7 +1385,7 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Setup ffmpeg convert array for output stream, performed here to now last array
    */
   if (needDSPAddonsReinit)
-    SetFFMpegDSPProcessorArray(m_ffMpegConvertArray, NULL, lastOutArray);
+    SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], lastOutArray, m_idx_out, m_addonSettings.lOutChannelPresentFlags);
 
   /**
    * Convert back to required output format
@@ -1566,7 +1526,7 @@ void CActiveAEDSPProcess::CalculateCPUUsage(uint64_t iTime)
   m_iLastProcessTime  = iTime;
 }
 
-void CActiveAEDSPProcess::SetFFMpegDSPProcessorArray(float *array_ffmpeg[2][AE_DSP_CH_MAX], float **array_in, float **array_out)
+void CActiveAEDSPProcess::SetFFMpegDSPProcessorArray(float *array_ffmpeg[AE_DSP_CH_MAX], float *array_dsp[AE_DSP_CH_MAX], int idx[AE_CH_MAX], unsigned long ChannelFlags)
 {
   /*!
    * Setup ffmpeg resampler channel setup, this way is not my favorite but it works to become
@@ -1577,54 +1537,15 @@ void CActiveAEDSPProcess::SetFFMpegDSPProcessorArray(float *array_ffmpeg[2][AE_D
    * already present channel memory storage.
    */
 
-  //! Initialize input channel alignmment for ffmpeg process array
-  if (array_in)
+  /*! NOTE: If you change or add new channel enums to AEChannel in 
+    * xbmc/cores/AudioEngine/Utils/AEChannelData.h you have to adapt this loop
+    */
+  for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
   {
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_FL)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_FL]]    = array_in[AE_DSP_CH_FL];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_FR)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_FR]]    = array_in[AE_DSP_CH_FR];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_FC)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_FC]]    = array_in[AE_DSP_CH_FC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_LFE)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_LFE]]   = array_in[AE_DSP_CH_LFE];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_BL)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_BL]]    = array_in[AE_DSP_CH_BL];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_BR)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_BR]]    = array_in[AE_DSP_CH_BR];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_FLOC) array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_FLOC]]  = array_in[AE_DSP_CH_FLOC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_FROC) array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_FROC]]  = array_in[AE_DSP_CH_FROC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_BC)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_BC]]    = array_in[AE_DSP_CH_BC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_SL)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_SL]]    = array_in[AE_DSP_CH_SL];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_SR)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_SR]]    = array_in[AE_DSP_CH_SR];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TFL)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TFL]]   = array_in[AE_DSP_CH_TFL];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TFR)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TFR]]   = array_in[AE_DSP_CH_TFR];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TFC)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TFC]]   = array_in[AE_DSP_CH_TFC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TC)   array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TC]]    = array_in[AE_DSP_CH_TC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TBL)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TBL]]   = array_in[AE_DSP_CH_TBL];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TBR)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TBR]]   = array_in[AE_DSP_CH_TBR];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_TBC)  array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_TBC]]   = array_in[AE_DSP_CH_TBC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_BLOC) array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_BLOC]]  = array_in[AE_DSP_CH_BLOC];
-    if (m_addonSettings.lInChannelPresentFlags & AE_DSP_PRSNT_CH_BROC) array_ffmpeg[FFMPEG_PROC_ARRAY_IN][m_idx_in[AE_CH_BROC]]  = array_in[AE_DSP_CH_BROC];
-  }
-
-  //! Initialize output channel alignmment for ffmpeg process array
-  if (array_out)
-  {
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_FL)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_FL]]    = array_out[AE_DSP_CH_FL];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_FR)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_FR]]    = array_out[AE_DSP_CH_FR];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_FC)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_FC]]    = array_out[AE_DSP_CH_FC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_LFE)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_LFE]]   = array_out[AE_DSP_CH_LFE];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_BL)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_BL]]    = array_out[AE_DSP_CH_BL];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_BR)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_BR]]    = array_out[AE_DSP_CH_BR];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_FLOC) array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_FLOC]]  = array_out[AE_DSP_CH_FLOC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_FROC) array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_FROC]]  = array_out[AE_DSP_CH_FROC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_BC)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_BC]]    = array_out[AE_DSP_CH_BC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_SL)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_SL]]    = array_out[AE_DSP_CH_SL];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_SR)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_SR]]    = array_out[AE_DSP_CH_SR];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TFL)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TFL]]   = array_out[AE_DSP_CH_TFL];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TFR)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TFR]]   = array_out[AE_DSP_CH_TFR];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TFC)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TFC]]   = array_out[AE_DSP_CH_TFC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TC)   array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TC]]    = array_out[AE_DSP_CH_TC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TBL)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TBL]]   = array_out[AE_DSP_CH_TBL];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TBR)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TBR]]   = array_out[AE_DSP_CH_TBR];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_TBC)  array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_TBC]]   = array_out[AE_DSP_CH_TBC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_BLOC) array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_BLOC]]  = array_out[AE_DSP_CH_BLOC];
-    if (m_addonSettings.lOutChannelPresentFlags & AE_DSP_PRSNT_CH_BROC) array_ffmpeg[FFMPEG_PROC_ARRAY_OUT][m_idx_out[AE_CH_BROC]]  = array_out[AE_DSP_CH_BROC];
+    if (ChannelFlags & 1 << ii)
+    {
+      array_ffmpeg[m_idx_in[ii + 1]] = array_dsp[ii];
+    }
   }
 }
 
