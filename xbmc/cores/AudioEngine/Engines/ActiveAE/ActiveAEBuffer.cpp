@@ -130,6 +130,19 @@ bool CActiveAEBufferPool::Create(unsigned int totaltime)
   config.sample_rate = m_format.m_sampleRate;
   config.channel_layout = CAEUtil::GetAVChannelLayout(m_format.m_channelLayout);
 
+  // discard already created buffers
+  if (m_allSamples.size() > 0 || m_freeSamples.size() > 0)
+  {
+    m_freeSamples.clear();
+    while (m_allSamples.size() > 0)
+    {
+      buffer = m_allSamples.front();
+      m_allSamples.pop_front();
+      delete buffer;
+    }
+    buffer = nullptr;
+  }
+
   unsigned int time = 0;
   unsigned int buffertime = (m_format.m_frames*1000) / m_format.m_sampleRate;
   if (m_format.m_dataFormat == AE_FMT_RAW)
