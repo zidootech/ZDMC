@@ -1411,8 +1411,8 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
     if (needDSPAddonsReinit)
     {
       // TODO: test this with an resampler add-on
-      SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], lastOutArray, m_idx_in, m_addonSettings.lInChannelPresentFlags);
-      SetFFMpegDSPProcessorArray(m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], m_processArray[togglePtr], m_idx_out, m_addonSettings.lOutChannelPresentFlags);
+      SetFFMpegDSPProcessorArray(m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_IN], lastOutArray, m_idx_in, m_addonSettings.lInChannelPresentFlags);
+      SetFFMpegDSPProcessorArray(m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_OUT], m_processArray[togglePtr], m_idx_out, m_addonSettings.lOutChannelPresentFlags);
     }
 
     frames = m_resamplerDSPProcessor->Resample((uint8_t**)m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_OUT], frames, (uint8_t**)m_ffMpegProcessArray[FFMPEG_PROC_ARRAY_IN], frames, 1.0);
