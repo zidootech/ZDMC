@@ -111,6 +111,8 @@ public:
   void ForceResampler(bool force);
   void SetDSPConfig(bool usedsp, bool bypassdsp);
   AEAudioFormat m_inputFormat;
+  AEAudioFormat m_adspInFormat;
+  AEAudioFormat m_adspOutFormat;
   std::deque<CSampleBuffer*> m_inputSamples;
   std::deque<CSampleBuffer*> m_outputSamples;
 
