@@ -1640,12 +1640,14 @@ void CActiveAEDSPProcess::SetFFMpegDSPProcessorArray(float *array_ffmpeg[AE_DSP_
   /*! NOTE: If you change or add new channel enums to AEChannel in 
     * xbmc/cores/AudioEngine/Utils/AEChannelData.h you have to adapt this loop
     */
+  memset(array_ffmpeg, 0, sizeof(float*)*AE_DSP_CH_MAX);
   for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
   {
     if (ChannelFlags & 1 << ii)
     {
       array_ffmpeg[m_idx_in[ii + 1]] = array_dsp[ii];
     }
+
   }
 }
 
