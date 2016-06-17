@@ -1304,10 +1304,10 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
   /**
    * Convert to required planar float format inside dsp system
    */
-  if (swr_convert(m_convertInput, (uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], m_processArraySize, (const uint8_t **)in->pkt->data , frames) < 0)
 #if defined(ADSP_COUT_DEBUG_OUTPUT)
   cout << "swr_convert(m_convertInput, ...)" << endl;
 #endif
+  if (swr_convert(m_convertInput, (uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], m_processArraySize, (const uint8_t **)in->pkt->data, in->pkt->nb_samples) < 0)
   {
     CLog::Log(LOGERROR, "ActiveAE DSP - %s - input audio convert failed", __FUNCTION__);
     return false;
@@ -1482,7 +1482,6 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
   /**
    * Convert back to required output format
    */
-  if (swr_convert(m_convertOutput, (uint8_t **)out->pkt->data, frames, (const uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], frames) < 0)
 #if defined(ADSP_COUT_DEBUG_OUTPUT)
    for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
    {
@@ -1490,11 +1489,13 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    }
    cout << "swr_convert(m_convertOutput, ...)" << endl;
 #endif
+  if (swr_convert(m_convertOutput, (uint8_t **)out->pkt->data, out->pkt->max_nb_samples, (const uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], frames) < 0)
   {
     CLog::Log(LOGERROR, "ActiveAE DSP - %s - output audio convert failed", __FUNCTION__);
     return false;
   }
   out->pkt->nb_samples = frames;
+  out->pkt_start_offset = out->pkt->nb_samples;
 
   /**
    * Update cpu process percent usage values for modes and total (every second)
