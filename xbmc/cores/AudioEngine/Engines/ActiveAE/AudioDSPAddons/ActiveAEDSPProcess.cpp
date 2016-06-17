@@ -81,11 +81,8 @@ CActiveAEDSPProcess::~CActiveAEDSPProcess()
 {
   ResetStreamFunctionsSelection();
 
-  if (m_resamplerDSPProcessor)
-  {
-    delete m_resamplerDSPProcessor;
-    m_resamplerDSPProcessor = NULL;
-  }
+  delete m_resamplerDSPProcessor;
+  m_resamplerDSPProcessor = NULL;
 
   /* Clear the buffer arrays */
   for (int i = 0; i < AE_DSP_CH_MAX; ++i)
