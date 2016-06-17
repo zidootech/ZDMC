@@ -1180,6 +1180,7 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
   {
     m_channelLayoutIn = in->pkt->config.channel_layout;
 
+    memset(m_idx_in, -1, sizeof(m_idx_in));
     m_idx_in[AE_CH_FL]    = av_get_channel_layout_channel_index(m_channelLayoutIn, AV_CH_FRONT_LEFT);
     m_idx_in[AE_CH_FR]    = av_get_channel_layout_channel_index(m_channelLayoutIn, AV_CH_FRONT_RIGHT);
     m_idx_in[AE_CH_FC]    = av_get_channel_layout_channel_index(m_channelLayoutIn, AV_CH_FRONT_CENTER);
@@ -1209,6 +1210,7 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
   {
     m_channelLayoutOut = out->pkt->config.channel_layout;
 
+    memset(m_idx_out, -1, sizeof(m_idx_out));
     m_idx_out[AE_CH_FL]   = av_get_channel_layout_channel_index(m_channelLayoutOut, AV_CH_FRONT_LEFT);
     m_idx_out[AE_CH_FR]   = av_get_channel_layout_channel_index(m_channelLayoutOut, AV_CH_FRONT_RIGHT);
     m_idx_out[AE_CH_FC]   = av_get_channel_layout_channel_index(m_channelLayoutOut, AV_CH_FRONT_CENTER);
@@ -1645,7 +1647,7 @@ void CActiveAEDSPProcess::SetFFMpegDSPProcessorArray(float *array_ffmpeg[AE_DSP_
   {
     if (ChannelFlags & 1 << ii)
     {
-      array_ffmpeg[m_idx_in[ii + 1]] = array_dsp[ii];
+      array_ffmpeg[idx[ii + 1]] = array_dsp[ii];
     }
 
   }
