@@ -275,11 +275,8 @@ namespace ActiveAE
       bool                              m_forceInit;                /*!< if set to true the process function perform a reinitialization of addons and data */
       AE_DSP_ADDONMAP                   m_usedMap;                  /*!< a map of all currently used audio dsp add-on's */
       AEAudioFormat                     m_inputFormat;              /*!< the used input stream format */
-      AEAudioFormat                     m_outputFormat;             /*!< the from XBMX requested output format */
-      unsigned int                      m_outputSamplerate;         /*!< the currently active output samplerate can be become changed from addon resamplers */
-      unsigned int                      m_outputFrames;             /*!< the maximum present output frames */
+      AEAudioFormat                     m_outputFormat;             /*!< the from Kodi requested output format */
       AEQuality                         m_streamQuality;            /*!< from KODI requested stream quality, based also to addons */
-      enum AEDataFormat                 m_dataFormat;               /*!< The inside addon system used data format, currently fixed to float */
       AE_DSP_SETTINGS                   m_addonSettings;            /*!< the current stream's settings passed to dsp add-ons */
       AE_DSP_STREAM_PROPERTIES          m_addonStreamProperties;    /*!< the current stream's properties (eg. stream type) passed to dsp add-ons */
       int                               m_NewMasterMode;            /*!< if master mode is changed it set here and handled by process function */
