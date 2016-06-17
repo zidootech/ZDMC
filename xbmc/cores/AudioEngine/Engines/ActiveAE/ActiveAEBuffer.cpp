@@ -473,9 +473,12 @@ bool CActiveAEBufferPoolResample::ResampleBuffers(int64_t timestamp)
         CLog::Log(LOGDEBUG, "------m_dspSample->timestamp: %i, m_dspSample->pkt_start_offset:%i, m_dspSample->pkt->bytes_per_sample:%i, m_dspSample->pkt->nb_samples:%i, m_dspSample->pkt->pause_burst_ms:%i, m_dspSample->pkt->planes:%i, m_dspSample->pkt->linesize:%i, m_dspSample->pkt->max_nb_samples:%i", m_dspSample->timestamp, m_dspSample->pkt_start_offset, m_dspSample->pkt->bytes_per_sample, m_dspSample->pkt->nb_samples, m_dspSample->pkt->pause_burst_ms, m_dspSample->pkt->planes, m_dspSample->pkt->linesize, m_dspSample->pkt->max_nb_samples);
         CLog::Log(LOGDEBUG, "------m_dspSample->pkt->config.bits_per_sample:%i, m_dspSample->pkt->config.channels:%i, m_dspSample->pkt->config.channel_layout:%lld, m_dspSample->pkt->config.dither_bits:%i, m_dspSample->pkt->config.sample_rate:%i", m_dspSample->pkt->config.bits_per_sample, m_dspSample->pkt->config.channels, (unsigned long long)m_dspSample->pkt->config.channel_layout, m_dspSample->pkt->config.dither_bits, m_dspSample->pkt->config.sample_rate);
 #endif
+        // currently AudioDSP doesn't do any internal buffering that's why timestamp and pkt_start_offset
+        // is the same as the input
+        m_dspSample->timestamp = in->timestamp;
+        m_dspSample->pkt_start_offset = in->pkt_start_offset;
         if (m_dspSample && m_processor->Process(in, m_dspSample))
         {
-          m_dspSample->timestamp = in->timestamp;
           in->Return();
           in = m_dspSample;
           m_dspSample = NULL;
