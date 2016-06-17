@@ -249,21 +249,31 @@ bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, boo
    */
   if ((useDSP || m_changeDSP) && !m_bypassDSP)
   {
-    m_dspFormat = m_inputFormat;
-    m_useDSP = CServiceBroker::GetADSP().CreateDSPs(m_streamId, m_processor, m_dspFormat, m_format, upmix, m_resampleQuality, m_MatrixEncoding, m_AudioServiceType, m_Profile);
+    // use input format from this CActiveAEBufferPoolResample as input for AudioDSP
+    // and use CActiveAEBufferPool::m_format as output format of AudioDSP
+    m_useDSP = CServiceBroker::GetADSP().CreateDSPs(m_streamId, m_processor, m_inputFormat, CActiveAEBufferPool::m_format, 
+                                                    upmix, m_resampleQuality, m_MatrixEncoding, m_AudioServiceType, m_Profile);
     if (m_useDSP)
     {
-
-      m_inputFormat.m_channelLayout = m_processor->GetChannelLayout();    /* Overide input format with DSP's supported format */
-      m_inputFormat.m_sampleRate    = m_processor->GetOutputSamplerate(); /* Overide input format with DSP's generated samplerate */
-      m_inputFormat.m_dataFormat    = m_processor->GetDataFormat();       /* Overide input format with DSP's processed data format, normally it is float */
-      m_inputFormat.m_frames        = m_processor->GetOutputFrames();
+      m_adspOutFormat = CActiveAEBufferPool::m_format;
+      m_adspOutFormat.m_channelLayout = m_processor->GetChannelLayout();    /* Overide input format with DSP's supported format */
+      m_adspOutFormat.m_sampleRate    = m_processor->GetOutputSamplerate(); /* Overide input format with DSP's generated samplerate */
+      m_adspOutFormat.m_dataFormat    = m_processor->GetDataFormat();       /* Overide input format with DSP's processed data format, normally it is float */
+      m_adspOutFormat.m_frames        = m_processor->GetOutputFrames();
       m_forceResampler              = true;                               /* Force load of ffmpeg resampler, required to detect exact input and output channel alignment pointers */
       if (m_processor->GetChannelLayout().Count() > 2)                    /* Disable upmix for CActiveAEResample if DSP layout > 2.0, becomes perfomed by DSP */
         upmix = false;
 
-      m_dspBuffer = new CActiveAEBufferPool(m_format);               /* Get dsp processing buffer class, based on dsp output format */
+      if (!m_dspBuffer)
+      {
+        m_dspBuffer = new CActiveAEBufferPool(m_adspOutFormat); /* Get dsp processing buffer class, based on dsp output format */
+      }
+      else
+      {
+        m_dspBuffer->m_format = m_adspOutFormat;
+      }
       m_dspBuffer->Create(totaltime);
+      CActiveAEBufferPool::Create(totaltime); // recreate output buffer cause format has changed
     }
   }
   m_changeDSP  = false;
@@ -290,19 +300,31 @@ bool CActiveAEBufferPoolResample::Create(unsigned int totaltime, bool remap, boo
 
   if (m_useResampler || m_changeResampler)
   {
-    m_resampler = CAEResampleFactory::Create();
+    if(!m_resampler)
+      m_resampler = CAEResampleFactory::Create();
+
+    AEAudioFormat m_resamplerInFormat;
+    if (m_useDSP)
+    {
+      m_resamplerInFormat = m_adspOutFormat;
+    }
+    else
+    {
+      m_resamplerInFormat = m_inputFormat;
+    }
+
     m_resampler->Init(CAEUtil::GetAVChannelLayout(m_format.m_channelLayout),
                                 m_format.m_channelLayout.Count(),
                                 m_format.m_sampleRate,
                                 CAEUtil::GetAVSampleFormat(m_format.m_dataFormat),
                                 CAEUtil::DataFormatToUsedBits(m_format.m_dataFormat),
                                 CAEUtil::DataFormatToDitherBits(m_format.m_dataFormat),
-                                CAEUtil::GetAVChannelLayout(m_inputFormat.m_channelLayout),
-                                m_inputFormat.m_channelLayout.Count(),
-                                m_inputFormat.m_sampleRate,
-                                CAEUtil::GetAVSampleFormat(m_inputFormat.m_dataFormat),
-                                CAEUtil::DataFormatToUsedBits(m_inputFormat.m_dataFormat),
-                                CAEUtil::DataFormatToDitherBits(m_inputFormat.m_dataFormat),
+                                CAEUtil::GetAVChannelLayout(m_resamplerInFormat.m_channelLayout),
+                                m_resamplerInFormat.m_channelLayout.Count(),
+                                m_resamplerInFormat.m_sampleRate,
+                                CAEUtil::GetAVSampleFormat(m_resamplerInFormat.m_dataFormat),
+                                CAEUtil::DataFormatToUsedBits(m_resamplerInFormat.m_dataFormat),
+                                CAEUtil::DataFormatToDitherBits(m_resamplerInFormat.m_dataFormat),
                                 upmix,
                                 m_normalize,
                                 remap ? &m_format.m_channelLayout : NULL,
@@ -328,18 +350,29 @@ void CActiveAEBufferPoolResample::ChangeResampler()
     upmix = false;
 
   m_resampler = CAEResampleFactory::Create();
+
+  AEAudioFormat m_resamplerInFormat;
+  if (m_useDSP)
+  {
+    m_resamplerInFormat = m_adspOutFormat;
+  }
+  else
+  {
+    m_resamplerInFormat = m_inputFormat;
+  }
+
   m_resampler->Init(CAEUtil::GetAVChannelLayout(m_format.m_channelLayout),
                                 m_format.m_channelLayout.Count(),
                                 m_format.m_sampleRate,
                                 CAEUtil::GetAVSampleFormat(m_format.m_dataFormat),
                                 CAEUtil::DataFormatToUsedBits(m_format.m_dataFormat),
                                 CAEUtil::DataFormatToDitherBits(m_format.m_dataFormat),
-                                CAEUtil::GetAVChannelLayout(m_inputFormat.m_channelLayout),
-                                m_inputFormat.m_channelLayout.Count(),
-                                m_inputFormat.m_sampleRate,
-                                CAEUtil::GetAVSampleFormat(m_inputFormat.m_dataFormat),
-                                CAEUtil::DataFormatToUsedBits(m_inputFormat.m_dataFormat),
-                                CAEUtil::DataFormatToDitherBits(m_inputFormat.m_dataFormat),
+                                CAEUtil::GetAVChannelLayout(m_resamplerInFormat.m_channelLayout),
+                                m_resamplerInFormat.m_channelLayout.Count(),
+                                m_resamplerInFormat.m_sampleRate,
+                                CAEUtil::GetAVSampleFormat(m_resamplerInFormat.m_dataFormat),
+                                CAEUtil::DataFormatToUsedBits(m_resamplerInFormat.m_dataFormat),
+                                CAEUtil::DataFormatToDitherBits(m_resamplerInFormat.m_dataFormat),
                                 upmix,
                                 m_normalize,
                                 m_remap ? &m_format.m_channelLayout : NULL,
@@ -355,17 +388,20 @@ void CActiveAEBufferPoolResample::ChangeAudioDSP()
   bool wasActive = false;
   if (m_useDSP && m_processor != NULL)
   {
-    m_inputFormat = m_processor->GetInputFormat();
     wasActive = true;
   }
 
-  m_useDSP = CServiceBroker::GetADSP().CreateDSPs(m_streamId, m_processor, m_dspFormat, m_format, m_stereoUpmix, m_resampleQuality, m_MatrixEncoding, m_AudioServiceType, m_Profile, wasActive);
+  m_useDSP = CServiceBroker::GetADSP().CreateDSPs(m_streamId, m_processor, m_inputFormat,
+                                                  CActiveAEBufferPool::m_format, m_stereoUpmix, 
+                                                  m_resampleQuality, m_MatrixEncoding, 
+                                                  m_AudioServiceType, m_Profile, wasActive);
   if (m_useDSP)
   {
-    m_inputFormat.m_channelLayout = m_processor->GetChannelLayout();    /* Overide input format with DSP's supported format */
-    m_inputFormat.m_sampleRate    = m_processor->GetOutputSamplerate(); /* Overide input format with DSP's generated samplerate */
-    m_inputFormat.m_dataFormat    = m_processor->GetDataFormat();       /* Overide input format with DSP's processed data format, normally it is float */
-    m_inputFormat.m_frames        = m_processor->GetOutputFrames();
+    m_adspOutFormat = CActiveAEBufferPool::m_format;
+    m_adspOutFormat.m_channelLayout = m_processor->GetChannelLayout();    /* Overide output format with DSP's supported format */
+    m_adspOutFormat.m_sampleRate    = m_processor->GetOutputSamplerate(); /* Overide output format with DSP's generated samplerate */
+    m_adspOutFormat.m_dataFormat    = m_processor->GetDataFormat();       /* Overide output format with DSP's processed data format, normally it is float */
+    m_adspOutFormat.m_frames        = m_processor->GetOutputFrames();
     m_changeResampler             = true;                               /* Force load of ffmpeg resampler, required to detect exact input and output channel alignment pointers */
   }
   else if (wasActive)
