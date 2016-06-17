@@ -665,8 +665,8 @@ float CActiveAEBufferPoolResample::GetDelay()
 
   if (m_procSample)
     delay += (float)m_procSample->pkt->nb_samples / m_procSample->pkt->config.sample_rate;
-  if (m_dspSample)
-    delay += (float)m_dspSample->pkt->nb_samples / m_dspSample->pkt->config.sample_rate;
+  //if (m_dspSample) // TODO this needs to be implemented when adsp supports asynchronous processing
+  //  delay += (float)m_dspSample->pkt->nb_samples / m_dspSample->pkt->config.sample_rate;
 
   for(itBuf=m_inputSamples.begin(); itBuf!=m_inputSamples.end(); ++itBuf)
   {
@@ -688,8 +688,8 @@ float CActiveAEBufferPoolResample::GetDelay()
   CLog::Log(LOGDEBUG, "------delay: %f", delay);
   if (m_useDSP)
   {
-    delay += m_processor->GetDelay();
     CLog::Log(LOGDEBUG, "------m_processor->GetDelay(): %f", m_processor->GetDelay());
+    //delay += m_processor->GetDelay();  // TODO this needs to be implemented when adsp supports asynchronous processing
   }
 #endif
 
