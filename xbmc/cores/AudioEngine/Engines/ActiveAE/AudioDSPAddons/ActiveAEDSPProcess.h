@@ -28,6 +28,8 @@ extern "C" {
 #include "libswresample/swresample.h"
 }
 
+//#define ADSP_COUT_DEBUG_OUTPUT //uncomment this to enable debug output through stdin
+
 namespace ActiveAE
 {
   class CSampleBuffer;

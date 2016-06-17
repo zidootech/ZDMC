@@ -43,6 +43,12 @@ using namespace ActiveAE;
 #define FFMPEG_PROC_ARRAY_IN  0
 #define FFMPEG_PROC_ARRAY_OUT 1
 
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+#include <iostream>
+using namespace std;
+#endif
+
+
 CActiveAEDSPProcess::CActiveAEDSPProcess(AE_DSP_STREAM_ID streamId)
  : m_streamId(streamId)
 {
@@ -126,6 +132,26 @@ bool CActiveAEDSPProcess::Create(const AEAudioFormat &inputFormat, const AEAudio
 
   CLog::Log(LOGDEBUG, "ActiveAE DSP - %s - Audio DSP processing id %d created:", __FUNCTION__, m_streamId);
 
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "CActiveAEDSPProcess::Create(...)" << endl;
+  cout << " CAEUtil::GetAVChannelLayout(m_inputFormat.m_channelLayout)=" << CAEUtil::GetAVChannelLayout(m_inputFormat.m_channelLayout) << endl;
+  cout << " CAEUtil::GetAVSampleFormat(m_inputFormat.m_dataFormat)=" << CAEUtil::GetAVSampleFormat(m_inputFormat.m_dataFormat) << endl;
+  cout << "  m_inputFormat.m_channelLayout.Count()=" << m_inputFormat.m_channelLayout.Count() << endl;
+  cout << "  m_inputFormat.m_dataFormat=" << CAEUtil::DataFormatToStr(m_inputFormat.m_dataFormat) << endl;
+  cout << "  m_inputFormat.m_frames=" << m_inputFormat.m_frames << endl;
+  cout << "  m_inputFormat.m_frameSize=" << m_inputFormat.m_frameSize << endl;
+  cout << "  m_inputFormat.m_sampleRate=" << m_inputFormat.m_sampleRate << endl;
+  cout << "  m_inputFormat.m_channelLayout.HasChannel(...)=";
+  for (int ch = AE_CH_FL; ch <= AE_CH_BROC; ch++)
+  {
+    if (m_inputFormat.m_channelLayout.HasChannel((AEChannel)ch))
+    {
+      cout << m_inputFormat.m_channelLayout.GetChName((AEChannel)ch) << ", ";
+    }
+  }
+  cout << endl;
+#endif
+
   m_convertInput = swr_alloc_set_opts(m_convertInput,
                                       CAEUtil::GetAVChannelLayout(m_inputFormat.m_channelLayout),
                                       AV_SAMPLE_FMT_FLTP,
@@ -145,6 +171,25 @@ bool CActiveAEDSPProcess::Create(const AEAudioFormat &inputFormat, const AEAudio
     CLog::Log(LOGERROR, "ActiveAE DSP - %s - DSP input convert failed", __FUNCTION__);
     return false;
   }
+
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << " CAEUtil::GetAVChannelLayout(m_outputFormat.m_channelLayout)=" << CAEUtil::GetAVChannelLayout(m_outputFormat.m_channelLayout) << endl;
+  cout << " CAEUtil::GetAVSampleFormat(m_outputFormat.m_dataFormat)=" << CAEUtil::GetAVSampleFormat(m_outputFormat.m_dataFormat) << endl;
+  cout << "  m_outputFormat.m_channelLayout.Count()=" << m_outputFormat.m_channelLayout.Count() << endl;
+  cout << "  m_outputFormat.m_dataFormat=" << CAEUtil::DataFormatToStr(m_outputFormat.m_dataFormat) << endl;
+  cout << "  m_outputFormat.m_frames=" << m_outputFormat.m_frames << endl;
+  cout << "  m_outputFormat.m_frameSize=" << m_outputFormat.m_frameSize << endl;
+  cout << "  m_outputFormat.m_sampleRate=" << m_outputFormat.m_sampleRate << endl;
+  cout << "  m_outputFormat.m_channelLayout.HasChannel(...)=";
+  for (int ch = AE_CH_FL; ch <= AE_CH_BROC; ch++)
+  {
+    if (m_outputFormat.m_channelLayout.HasChannel((AEChannel)ch))
+    {
+      cout << m_outputFormat.m_channelLayout.GetChName((AEChannel)ch) << ", ";
+    }
+  }
+  cout << endl << endl;
+#endif
 
   m_convertOutput = swr_alloc_set_opts(m_convertOutput,
                                        CAEUtil::GetAVChannelLayout(m_outputFormat.m_channelLayout),
@@ -1097,6 +1142,36 @@ void CActiveAEDSPProcess::ClearArray(float **array, unsigned int samples)
 
 bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
 {
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+   cout << "CActiveAEDSPProcess::Process(...)" << endl;
+   cout << " in->timestamp=" << in->timestamp << endl
+        << " in->pkt_start_offset=" << in->pkt_start_offset << endl
+        << " in->pkt->config.fmt=" << in->pkt->config.fmt << endl
+        << " in->pkt->config.bits_per_sample=" << in->pkt->config.bits_per_sample << endl
+        << " in->pkt->config.channels=" << in->pkt->config.channels << endl
+        << " in->pkt->config.channel_layout=" << in->pkt->config.channel_layout << endl
+        << " in->pkt->config.dither_bits=" << in->pkt->config.dither_bits << endl
+        << " in->pkt->config.sample_rate=" << in->pkt->config.sample_rate << endl
+        << " in->pkt->max_nb_samples=" << in->pkt->max_nb_samples << endl
+        << " in->pkt->nb_samples=" << in->pkt->nb_samples << endl
+        << " in->pkt->planes=" << in->pkt->planes << endl
+        << " in->pkt->linesize=" << in->pkt->planes << endl;
+
+   cout << endl;
+   cout << " out->timestamp=" << out->timestamp << endl
+        << " out->pkt_start_offset=" << out->pkt_start_offset << endl
+        << " out->pkt->config.fmt=" << out->pkt->config.fmt << endl
+        << " out->pkt->config.bits_per_sample=" << out->pkt->config.bits_per_sample << endl
+        << " out->pkt->config.channels=" << out->pkt->config.channels << endl
+        << " out->pkt->config.channel_layout=" << out->pkt->config.channel_layout << endl
+        << " out->pkt->config.dither_bits=" << out->pkt->config.dither_bits << endl
+        << " out->pkt->config.sample_rate=" << out->pkt->config.sample_rate << endl
+        << " out->pkt->max_nb_samples=" << out->pkt->max_nb_samples << endl
+        << " out->pkt->nb_samples=" << out->pkt->nb_samples << endl
+        << " out->pkt->planes=" << out->pkt->planes << endl
+        << " out->pkt->linesize=" << out->pkt->planes << endl;
+#endif
+
   CSingleLock lock(m_restartSection);
 
   bool needDSPAddonsReinit  = m_forceInit;
@@ -1234,6 +1309,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Convert to required planar float format inside dsp system
    */
   if (swr_convert(m_convertInput, (uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_IN], m_processArraySize, (const uint8_t **)in->pkt->data , frames) < 0)
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "swr_convert(m_convertInput, ...)" << endl;
+#endif
   {
     CLog::Log(LOGERROR, "ActiveAE DSP - %s - input audio convert failed", __FUNCTION__);
     return false;
@@ -1248,6 +1326,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Can be used to have unchanged input stream..
    * All DSP addons allowed todo this.
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "InputProcess(...)" << endl;
+#endif
   for (unsigned int i = 0; i < m_addons_InputProc.size(); ++i)
   {
     if (!m_addons_InputProc[i].pAddon->InputProcess(&m_addons_InputProc[i].handle, (const float **)lastOutArray, frames))
@@ -1262,6 +1343,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Here a high quality resample can be performed.
    * Only one DSP addon is allowed todo this!
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "InputResampleProcess(...)" << endl;
+#endif
   if (m_addon_InputResample.pAddon)
   {
     startTime = CurrentHostCounter();
@@ -1280,6 +1364,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * DSP pre processing
    * All DSP addons allowed todo this and order of it set on settings.
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "PreProcess(...)" << endl;
+#endif
   for (unsigned int i = 0; i < m_addons_PreProc.size(); ++i)
   {
     startTime = CurrentHostCounter();
@@ -1318,6 +1405,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * from output and not becomes processed by active master processing mode or
    * perform ffmpeg related internal master processes.
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "Resample(...)" << endl;
+#endif
   if (m_resamplerDSPProcessor)
   {
     startTime = CurrentHostCounter();
@@ -1348,6 +1438,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * or frequency/volume corrections, speaker distance handling, equalizer... .
    * All DSP addons allowed todo this and order of it set on settings.
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "PostProcess(...)" << endl;
+#endif
   for (unsigned int i = 0; i < m_addons_PostProc.size(); ++i)
   {
     startTime = CurrentHostCounter();
@@ -1367,6 +1460,9 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Here a high quality resample can be performed.
    * Only one DSP addon is allowed todo this!
    */
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  cout << "OutputResampleProcess(...)" << endl;
+#endif
   if (m_addon_OutputResample.pAddon)
   {
     startTime = CurrentHostCounter();
@@ -1391,6 +1487,13 @@ bool CActiveAEDSPProcess::Process(CSampleBuffer *in, CSampleBuffer *out)
    * Convert back to required output format
    */
   if (swr_convert(m_convertOutput, (uint8_t **)out->pkt->data, frames, (const uint8_t **)m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT], frames) < 0)
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+   for (int ii = 0; ii < AE_DSP_CH_MAX; ii++)
+   {
+    cout << "m_ffMpegConvertArray[" << ii << "]=0x" << hex << m_ffMpegConvertArray[FFMPEG_PROC_ARRAY_OUT][ii] << dec << endl;
+   }
+   cout << "swr_convert(m_convertOutput, ...)" << endl;
+#endif
   {
     CLog::Log(LOGERROR, "ActiveAE DSP - %s - output audio convert failed", __FUNCTION__);
     return false;

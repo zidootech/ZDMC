@@ -26,7 +26,13 @@
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "cores/AudioEngine/AEResampleFactory.h"
 
+
 using namespace ActiveAE;
+
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+#include <iostream>
+using namespace std;
+#endif
 
 /* typecast AE to CActiveAE */
 #define AE (*((CActiveAE*)CAEFactory::GetEngine()))
@@ -153,6 +159,10 @@ bool CActiveAEBufferPool::Create(unsigned int totaltime)
 CActiveAEBufferPoolResample::CActiveAEBufferPoolResample(AEAudioFormat inputFormat, AEAudioFormat outputFormat, AEQuality quality)
   : CActiveAEBufferPool(outputFormat)
 {
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  CLog::Log(LOGDEBUG, "------CActiveAEBufferPoolResample::CActiveAEBufferPoolResample(...): inputFormat.m_dataFormat=%f, inputFormat.m_frames=%f, inputFormat.m_frameSize=%f, inputFormat.m_sampleRate=%f", (double)inputFormat.m_dataFormat, (double)inputFormat.m_frames, (double)inputFormat.m_frameSize, (double)inputFormat.m_sampleRate);
+  CLog::Log(LOGDEBUG, "------CActiveAEBufferPoolResample::CActiveAEBufferPoolResample(...): outputFormat.m_dataFormat=%f, outputFormat.m_frames=%f, outputFormat.m_frameSize=%f, outputFormat.m_sampleRate=%f", (double)outputFormat.m_dataFormat, (double)outputFormat.m_frames, (double)outputFormat.m_frameSize, (double)outputFormat.m_sampleRate);
+#endif
   m_inputFormat = inputFormat;
   if (m_inputFormat.m_dataFormat == AE_FMT_RAW)
   {
@@ -429,6 +439,10 @@ bool CActiveAEBufferPoolResample::ResampleBuffers(int64_t timestamp)
       {
         in = m_inputSamples.front();
         m_inputSamples.pop_front();
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+        CLog::Log(LOGDEBUG, "------in->timestamp: %i, in->pkt_start_offset:%i, in->pkt->bytes_per_sample:%i, in->pkt->nb_samples:%i, in->pkt->pause_burst_ms:%i, in->pkt->planes:%i, in->pkt->linesize:%i, in->pkt->max_nb_samples:%i", in->timestamp, in->pkt_start_offset, in->pkt->bytes_per_sample, in->pkt->nb_samples, in->pkt->pause_burst_ms, in->pkt->planes, in->pkt->linesize, in->pkt->max_nb_samples);
+        CLog::Log(LOGDEBUG, "------in->pkt->config.bits_per_sample:%i, in->pkt->config.channels:%i, in->pkt->config.channel_layout:%lld, in->pkt->config.dither_bits:%i, in->pkt->config.sample_rate:%i", in->pkt->config.bits_per_sample, in->pkt->config.channels, (unsigned long long)in->pkt->config.channel_layout, in->pkt->config.dither_bits, in->pkt->config.sample_rate);
+#endif
       }
       else
         in = NULL;
@@ -442,6 +456,10 @@ bool CActiveAEBufferPoolResample::ResampleBuffers(int64_t timestamp)
         if (!m_dspSample)
           m_dspSample = m_dspBuffer->GetFreeBuffer();
 
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+        CLog::Log(LOGDEBUG, "------m_dspSample->timestamp: %i, m_dspSample->pkt_start_offset:%i, m_dspSample->pkt->bytes_per_sample:%i, m_dspSample->pkt->nb_samples:%i, m_dspSample->pkt->pause_burst_ms:%i, m_dspSample->pkt->planes:%i, m_dspSample->pkt->linesize:%i, m_dspSample->pkt->max_nb_samples:%i", m_dspSample->timestamp, m_dspSample->pkt_start_offset, m_dspSample->pkt->bytes_per_sample, m_dspSample->pkt->nb_samples, m_dspSample->pkt->pause_burst_ms, m_dspSample->pkt->planes, m_dspSample->pkt->linesize, m_dspSample->pkt->max_nb_samples);
+        CLog::Log(LOGDEBUG, "------m_dspSample->pkt->config.bits_per_sample:%i, m_dspSample->pkt->config.channels:%i, m_dspSample->pkt->config.channel_layout:%lld, m_dspSample->pkt->config.dither_bits:%i, m_dspSample->pkt->config.sample_rate:%i", m_dspSample->pkt->config.bits_per_sample, m_dspSample->pkt->config.channels, (unsigned long long)m_dspSample->pkt->config.channel_layout, m_dspSample->pkt->config.dither_bits, m_dspSample->pkt->config.sample_rate);
+#endif
         if (m_dspSample && m_processor->Process(in, m_dspSample))
         {
           m_dspSample->timestamp = in->timestamp;
@@ -484,6 +502,10 @@ bool CActiveAEBufferPoolResample::ResampleBuffers(int64_t timestamp)
 
       if (in)
       {
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+        CLog::Log(LOGDEBUG, "------in->timestamp: %i, in->pkt_start_offset:%i, in->pkt->bytes_per_sample:%i, in->pkt->nb_samples:%i, in->pkt->pause_burst_ms:%i, in->pkt->planes:%i, in->pkt->linesize:%i, in->pkt->max_nb_samples:%i", in->timestamp, in->pkt_start_offset, in->pkt->bytes_per_sample, in->pkt->nb_samples, in->pkt->pause_burst_ms, in->pkt->planes, in->pkt->linesize, in->pkt->max_nb_samples);
+        CLog::Log(LOGDEBUG, "------in->pkt->config.bits_per_sample:%i, in->pkt->config.channels:%i, in->pkt->config.channel_layout:%lld, in->pkt->config.dither_bits:%i, in->pkt->config.sample_rate:%i", in->pkt->config.bits_per_sample, in->pkt->config.channels, (unsigned long long)in->pkt->config.channel_layout, in->pkt->config.dither_bits, in->pkt->config.sample_rate);
+#endif
         if (!timestamp)
         {
           if (in->timestamp)
@@ -610,10 +632,14 @@ float CActiveAEBufferPoolResample::GetDelay()
     delay += (float)samples / m_format.m_sampleRate;
   }
 
+#if defined(ADSP_COUT_DEBUG_OUTPUT)
+  CLog::Log(LOGDEBUG, "------delay: %f", delay);
   if (m_useDSP)
   {
     delay += m_processor->GetDelay();
+    CLog::Log(LOGDEBUG, "------m_processor->GetDelay(): %f", m_processor->GetDelay());
   }
+#endif
 
   return delay;
 }
