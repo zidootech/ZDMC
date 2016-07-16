@@ -84,7 +84,6 @@ public:
   int GetMBox() { return m_mb; }
   double AdjustHDMIClock(double adjust);
   double GetAdjustHDMIClock() { return m_last_pll_adjust; }
-  int GenCmd(char *response, int maxlen, const char *string);
 
   void SuspendVideoOutput();
   void ResumeVideoOutput();
