@@ -142,7 +142,7 @@ protected:
   bool                      m_StereoInvert;
   float                     m_sharpness;
 
-  CCriticalSection &m_sharedSection;
+  CCriticalSection m_sharedSection;
   MMAL_COMPONENT_T *m_vout;
   MMAL_PORT_T *m_vout_input;
   MMAL_QUEUE_T *m_queue_render;
