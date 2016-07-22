@@ -118,4 +118,37 @@ private:
 };
 
 extern CRBP g_RBP;
+
+
+#include "libavutil/pixfmt.h"
+#include "cores/VideoPlayer/VideoRenderers/RenderFormats.h"
+#include <stdint.h>
+
+struct DVDVideoPicture;
+struct SwsContext;
+class CMMALPool;
+
+class CPixelConverter
+{
+public:
+  CPixelConverter();
+  ~CPixelConverter() { Dispose(); }
+
+  bool Open(AVPixelFormat pixfmt, AVPixelFormat target, unsigned int width, unsigned int height);
+  void Dispose();
+  bool Decode(const uint8_t* pData, unsigned int size);
+  void GetPicture(DVDVideoPicture& dvdVideoPicture);
+  DVDVideoPicture* AllocatePicture(int iWidth, int iHeight);
+  void FreePicture(DVDVideoPicture* pPicture);
+
+private:
+  ERenderFormat    m_renderFormat;
+  unsigned int     m_width;
+  unsigned int     m_height;
+  SwsContext*      m_swsContext;
+  DVDVideoPicture* m_buf;
+  std::shared_ptr<CMMALPool> m_pool;
+  uint32_t m_mmal_format;
+};
+
 #endif

@@ -517,4 +517,229 @@ double CRBP::AdjustHDMIClock(double adjust)
   return m_last_pll_adjust;
 }
 
+#include "cores/VideoPlayer/DVDClock.h"
+#include "cores/VideoPlayer/DVDCodecs/DVDCodecUtils.h"
+#include "cores/VideoPlayer/VideoRenderers/HwDecRender/MMALRenderer.h"
+#include "utils/log.h"
+
+extern "C"
+{
+  #include "libswscale/swscale.h"
+  #include "libavutil/imgutils.h"
+}
+
+CPixelConverter::CPixelConverter() :
+  m_renderFormat(RENDER_FMT_MMAL),
+  m_width(0),
+  m_height(0),
+  m_swsContext(nullptr),
+  m_buf(nullptr)
+{
+}
+
+static struct {
+  AVPixelFormat pixfmt;
+  AVPixelFormat targetfmt;
+} pixfmt_target_table[] =
+{
+   {AV_PIX_FMT_BGR0,      AV_PIX_FMT_BGR0},
+   {AV_PIX_FMT_RGB565LE,  AV_PIX_FMT_RGB565LE},
+   {AV_PIX_FMT_NONE,      AV_PIX_FMT_NONE}
+};
+
+static AVPixelFormat pixfmt_to_target(AVPixelFormat pixfmt)
+{
+  unsigned int i;
+  for (i = 0; pixfmt_target_table[i].pixfmt != AV_PIX_FMT_NONE; i++)
+    if (pixfmt_target_table[i].pixfmt == pixfmt)
+      break;
+  return pixfmt_target_table[i].targetfmt;
+}
+
+bool CPixelConverter::Open(AVPixelFormat pixfmt, AVPixelFormat targetfmt, unsigned int width, unsigned int height)
+{
+  targetfmt = pixfmt_to_target(pixfmt);
+  CLog::Log(LOGDEBUG, "CPixelConverter::%s: pixfmt:%d(%s) targetfmt:%d(%s) %dx%d", __FUNCTION__, pixfmt, av_get_pix_fmt_name(pixfmt), targetfmt, av_get_pix_fmt_name(targetfmt), width, height);
+  if (targetfmt == AV_PIX_FMT_NONE || width == 0 || height == 0)
+  {
+    CLog::Log(LOGERROR, "%s: Invalid target pixel format: %d", __FUNCTION__, targetfmt);
+    assert(0);
+    return false;
+  }
+
+  m_width = width;
+  m_height = height;
+
+  m_swsContext = sws_getContext(width, height, pixfmt,
+                                width, height, targetfmt,
+                                SWS_FAST_BILINEAR, NULL, NULL, NULL);
+  if (!m_swsContext)
+  {
+    CLog::Log(LOGERROR, "%s: Failed to create swscale context", __FUNCTION__);
+    return false;
+  }
+
+  if (targetfmt == AV_PIX_FMT_YUV420P)
+    m_mmal_format = MMAL_ENCODING_I420;
+  else if (targetfmt == AV_PIX_FMT_ARGB)
+    m_mmal_format = MMAL_ENCODING_ARGB;
+  else if (targetfmt == AV_PIX_FMT_RGBA)
+    m_mmal_format = MMAL_ENCODING_RGBA;
+  else if (targetfmt == AV_PIX_FMT_ABGR)
+    m_mmal_format = MMAL_ENCODING_ABGR;
+  else if (targetfmt == AV_PIX_FMT_BGRA || targetfmt == AV_PIX_FMT_BGR0)
+    m_mmal_format = MMAL_ENCODING_BGRA;
+  else if (targetfmt == AV_PIX_FMT_RGB24)
+    m_mmal_format = MMAL_ENCODING_RGB24;
+  else if (targetfmt == AV_PIX_FMT_BGR24)
+    m_mmal_format = MMAL_ENCODING_BGR24;
+  else if (targetfmt == AV_PIX_FMT_RGB565 || targetfmt == AV_PIX_FMT_RGB565LE)
+    m_mmal_format = MMAL_ENCODING_RGB16;
+  else if (targetfmt == AV_PIX_FMT_BGR565)
+    m_mmal_format = MMAL_ENCODING_BGR16;
+  else
+    m_mmal_format = MMAL_ENCODING_UNKNOWN;
+
+  if (m_mmal_format == MMAL_ENCODING_UNKNOWN)
+    return false;
+
+  /* Create dummy component with attached pool */
+  m_pool = std::make_shared<CMMALPool>(MMAL_COMPONENT_DEFAULT_VIDEO_DECODER, false, MMAL_NUM_OUTPUT_BUFFERS, 0, MMAL_ENCODING_I420, MMALStateFFDec);
+
+  return true;
+}
+
+// allocate a new picture (AV_PIX_FMT_YUV420P)
+DVDVideoPicture* CPixelConverter::AllocatePicture(int iWidth, int iHeight)
+{
+  MMAL::CMMALYUVBuffer *omvb = nullptr;
+  DVDVideoPicture* pPicture = new DVDVideoPicture;
+  // gpu requirements
+  int w = (iWidth + 31) & ~31;
+  int h = (iHeight + 15) & ~15;
+  if (pPicture)
+  {
+    assert(m_pool);
+    m_pool->SetFormat(m_mmal_format, iWidth, iHeight, w, h, 0, nullptr);
+    omvb = dynamic_cast<MMAL::CMMALYUVBuffer *>(m_pool->GetBuffer(500));
+    if (!omvb || !omvb->mmal_buffer || !omvb->gmem || !omvb->gmem->m_arm)
+    {
+      CLog::Log(LOGERROR, "CPixelConverter::AllocatePicture, unable to allocate new video picture, out of memory.");
+      delete pPicture;
+      pPicture = NULL;
+    }
+    CGPUMEM *gmem = omvb->gmem;
+    omvb->mmal_buffer->data = (uint8_t *)gmem->m_vc_handle;
+    omvb->mmal_buffer->alloc_size = omvb->mmal_buffer->length = gmem->m_numbytes;
+  }
+
+  if (pPicture)
+  {
+    pPicture->MMALBuffer = omvb;
+    pPicture->iWidth = iWidth;
+    pPicture->iHeight = iHeight;
+  }
+  CLog::Log(LOGDEBUG, "CPixelConverter::AllocatePicture pic:%p omvb:%p mmal:%p %dx%d format:%.4s", pPicture, omvb, omvb ? omvb->mmal_buffer : nullptr, iWidth, iHeight, (char *)&m_mmal_format);
+  return pPicture;
+}
+
+void CPixelConverter::FreePicture(DVDVideoPicture* pPicture)
+{
+  assert(pPicture);
+  if (pPicture->MMALBuffer)
+    pPicture->MMALBuffer->Release();
+  delete pPicture;
+}
+
+void CPixelConverter::Dispose()
+{
+  m_pool->Close();
+  m_pool = nullptr;
+
+  if (m_swsContext)
+  {
+    sws_freeContext(m_swsContext);
+    m_swsContext = nullptr;
+  }
+
+  if (m_buf)
+  {
+    FreePicture(m_buf);
+    m_buf = nullptr;
+  }
+}
+
+bool CPixelConverter::Decode(const uint8_t* pData, unsigned int size)
+{
+  if (pData == nullptr || size == 0 || m_swsContext == nullptr)
+    return false;
+
+  if (m_buf)
+    FreePicture(m_buf);
+  m_buf = AllocatePicture(m_width, m_height);
+  if (!m_buf)
+  {
+    CLog::Log(LOGERROR, "%s: Failed to allocate picture of dimensions %dx%d", __FUNCTION__, m_width, m_height);
+    return false;
+  }
+
+  uint8_t* dataMutable = const_cast<uint8_t*>(pData);
+
+  const int stride = size / m_height;
+
+  int bpp = 4;
+  if (m_mmal_format == MMAL_ENCODING_ARGB || m_mmal_format == MMAL_ENCODING_RGBA || m_mmal_format == MMAL_ENCODING_ABGR || m_mmal_format == MMAL_ENCODING_BGRA)
+    bpp = 4;
+  else if (m_mmal_format == MMAL_ENCODING_RGB24 || m_mmal_format == MMAL_ENCODING_BGR24)
+    bpp = 4;
+  else if (m_mmal_format == MMAL_ENCODING_RGB16 || m_mmal_format == MMAL_ENCODING_BGR16)
+    bpp = 2;
+  else
+  {
+    CLog::Log(LOGERROR, "CPixelConverter::AllocatePicture, unknown format:%.4s", (char *)&m_mmal_format);
+    return false;
+  }
+
+  MMAL::CMMALYUVBuffer *omvb = (MMAL::CMMALYUVBuffer *)m_buf->MMALBuffer;
+
+  uint8_t* src[] =       { dataMutable,                       0, 0, 0 };
+  int      srcStride[] = { stride,                            0, 0, 0 };
+  uint8_t* dst[] =       { (uint8_t *)omvb->gmem->m_arm,      0, 0, 0 };
+  int      dstStride[] = { (int)omvb->m_aligned_width * bpp,  0, 0, 0 };
+
+  sws_scale(m_swsContext, src, srcStride, 0, m_height, dst, dstStride);
+
+  CLog::Log(LOGDEBUG, "CPixelConverter::Decode pic:%p omvb:%p mmal:%p arm:%p %dx%d format:%.4s", m_buf, m_buf->MMALBuffer, nullptr, nullptr, m_buf->iWidth, m_buf->iHeight, "null");
+  return true;
+}
+
+void CPixelConverter::GetPicture(DVDVideoPicture& dvdVideoPicture)
+{
+  dvdVideoPicture.dts            = DVD_NOPTS_VALUE;
+  dvdVideoPicture.pts            = DVD_NOPTS_VALUE;
+
+  for (int i = 0; i < 4; i++)
+  {
+    dvdVideoPicture.data[i]      = nullptr;
+    dvdVideoPicture.iLineSize[i] = 0;
+  }
+
+  dvdVideoPicture.iFlags         = 0; // *not* DVP_FLAG_ALLOCATED
+  dvdVideoPicture.color_matrix   = 4; // CONF_FLAGS_YUVCOEF_BT601
+  dvdVideoPicture.color_range    = 0; // *not* CONF_FLAGS_YUV_FULLRANGE
+  dvdVideoPicture.iWidth         = m_width;
+  dvdVideoPicture.iHeight        = m_height;
+  dvdVideoPicture.iDisplayWidth  = m_width; // TODO: Update if aspect ratio changes
+  dvdVideoPicture.iDisplayHeight = m_height;
+  dvdVideoPicture.format         = m_renderFormat;
+  dvdVideoPicture.MMALBuffer     = m_buf->MMALBuffer;
+
+  MMAL::CMMALYUVBuffer *omvb = (MMAL::CMMALYUVBuffer *)m_buf->MMALBuffer;
+
+  // need to flush ARM cache so GPU can see it
+  omvb->gmem->Flush();
+
+  CLog::Log(LOGDEBUG, "CPixelConverter::GetPicture pic:%p omvb:%p mmal:%p arm:%p %dx%d format:%.4s", m_buf, m_buf->MMALBuffer, omvb->mmal_buffer, omvb->gmem->m_arm, dvdVideoPicture.iWidth, dvdVideoPicture.iHeight, (char *)&omvb->m_encoding);
+}
+
 #endif
