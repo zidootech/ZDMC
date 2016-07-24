@@ -425,6 +425,7 @@ CMMALRenderer::CMMALRenderer() : CThread("MMALRenderer"), m_processThread(this, 
   m_deint_aligned_height = 0;
   m_cachedSourceRect.SetRect(0, 0, 0, 0);
   m_cachedDestRect.SetRect(0, 0, 0, 0);
+  m_interlace_history = 0;
 
   m_queue_process = mmal_queue_create();
   m_processThread.Create();
@@ -556,6 +557,8 @@ void CMMALRenderer::Run()
           interlace_method = VS_INTERLACEMETHOD_MMAL_ADVANCED;
         bool interlace = (omvb->mmal_buffer->flags & MMAL_BUFFER_HEADER_VIDEO_FLAG_INTERLACED) ? true:false;
 
+        m_interlace_history = (m_interlace_history << 1) | (interlace ? 1 : 0);
+
         // advanced deinterlace requires 3 frames of context so disable when showing stills
         if (omvb->m_stills)
         {
@@ -574,7 +577,9 @@ void CMMALRenderer::Run()
             interlace_method = VS_INTERLACEMETHOD_MMAL_BOB_HALF;
         }
 
-        if (interlace_method == VS_INTERLACEMETHOD_NONE)
+        bool was_enabled = m_deint_input != nullptr;
+
+        if (interlace_method == VS_INTERLACEMETHOD_NONE || !m_interlace_history)
         {
           if (m_deint_input)
             DestroyDeinterlace();
@@ -597,6 +602,8 @@ void CMMALRenderer::Run()
           omvb->SetVideoDeintMethod("bob(x1)");
         else
           omvb->SetVideoDeintMethod("none");
+
+        CLog::Log(LOGDEBUG, "%s::%s im:%d in:%d(%llx) flags:%x enabled:%d->%d", CLASSNAME, __func__, interlace_method, interlace, m_interlace_history, omvb->mmal_buffer->flags, was_enabled, m_deint_input != nullptr);
 
         if (m_deint_input)
         {
