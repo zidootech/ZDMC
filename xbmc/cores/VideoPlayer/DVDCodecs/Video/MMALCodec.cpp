@@ -402,14 +402,7 @@ bool CMMALVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
   {
     case AV_CODEC_ID_H264:
     case AV_CODEC_ID_H264_MVC:
-      switch (hints.profile)
-      {
-        case FF_PROFILE_H264_HIGH_10:
-        case FF_PROFILE_H264_HIGH_10_INTRA:
-        // Cannot hardware decode Hi10P without artifacts - switch to software on Pi2/Pi3
-          if (g_RBP.RasberryPiVersion() > 1)
-            return false;
-      }
+      // H.264
       m_codingType = MMAL_ENCODING_H264;
       m_pFormatName = "mmal-h264";
       if ((hints.codec_tag == MKTAG('M', 'V', 'C', '1') || hints.codec_tag == MKTAG('A', 'M', 'V', 'C')) &&
