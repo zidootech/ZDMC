@@ -57,6 +57,7 @@ using namespace KODI::MESSAGING;
 
 #define VERBOSE 0
 
+void CMMALBuffer::SetVideoDeintMethod(std::string method) { if (m_pool) m_pool->SetVideoDeintMethod(method); }
 
 CMMALVideoBuffer::CMMALVideoBuffer(CMMALVideo *omv, std::shared_ptr<CMMALPool> pool)
     : CMMALBuffer(pool), m_omv(omv)
@@ -375,8 +376,6 @@ bool CMMALVideo::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options)
     return false;
   if (hints.workaround_bugs & FF_BUG_GMC_UNSUPPORTED)
     return false;
-
-  m_processInfo.SetVideoDeintMethod("none");
 
   std::list<EINTERLACEMETHOD> deintMethods;
   deintMethods.push_back(EINTERLACEMETHOD::VS_INTERLACEMETHOD_AUTO);
