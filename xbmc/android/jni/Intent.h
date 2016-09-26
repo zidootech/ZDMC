@@ -43,7 +43,8 @@ public:
   bool hasCategory(const std::string &category) const;
 
   CJNIIntent putExtra(const std::string &name, const std::string &value);
-
+  CJNIIntent putExtra(const std::string &name, bool value) ;
+  
   void addFlags(int flags);
   void addCategory(const std::string &category);
   void setFlags(int flags);
@@ -52,7 +53,7 @@ public:
 
   // Note that these are strings. We auto-convert to uri objects.
   void setDataAndType(const CJNIURI &uri, const std::string &type);
-  void setData(const std::string &uri);
+  void setData(const CJNIURI &uri);
 
   void setPackage(const std::string &packageName);
   void setType(const std::string &type);

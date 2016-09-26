@@ -131,7 +131,7 @@ if test "$APP_NAME" != "" && test "$APP_VERSION_MAJOR" != "" && test "$APP_VERSI
 && test "$APP_VERSION_CODE" != "" && test "$APP_ADDON_API" != ""; then
   APP_VERSION=${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}
   if test "$APP_VERSION_TAG" != ""; then
-    APP_VERSION=${APP_VERSION}-${APP_VERSION_TAG}
+    APP_VERSION=${APP_VERSION}.${APP_VERSION_TAG}
   fi
 
   AC_SUBST(APP_PACKAGE)

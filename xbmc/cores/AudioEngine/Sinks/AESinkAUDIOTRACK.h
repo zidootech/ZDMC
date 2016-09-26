@@ -73,4 +73,5 @@ private:
   unsigned int       m_buffer_size;
   double             m_sink_delay;
   uint32_t           m_lastAddTimeMs;
+  uint32_t           m_count_getdelay;
 };

@@ -28,6 +28,7 @@
 #include "CompileInfo.h"
 
 #include "android/activity/JNIMainActivity.h"
+#include <sys/system_properties.h>
 
 // copied from new android_native_app_glue.c
 static void process_input(struct android_app* app, struct android_poll_source* source) {
@@ -50,6 +51,29 @@ static void process_input(struct android_app* app, struct android_poll_source* s
 extern void android_main(struct android_app* state)
 {
   {
+    const char *support_model[] = {"ZIDOO_X9S", "ZIDOO_X8"};
+    char modelname[PROP_VALUE_MAX];
+    int len = __system_property_get("ro.product.model", modelname);
+    int support = 0;
+    if (len > 0 && len <= PROP_VALUE_MAX)
+    {
+        //CXBMCApp::android_printf("android_main: modelname = %s ", modelname);
+        int howmany = sizeof(support_model)/sizeof(support_model[0]);
+        int i = 0;
+        for (i = 0; i < howmany; i++) {
+            if (strcmp((const char *)modelname, (const char *)support_model[i]) == 0) {
+                support = 1;
+                break;
+            }
+        }
+    }
+
+    if (support == 0) {
+        //CXBMCApp::android_printf("android_main: model is %s ", (support == 1) ? "support" : "not spport!");
+        CXBMCApp::android_printf("I am very sorry!! ");
+        exit(0);
+    }
+
     // make sure that the linker doesn't strip out our glue
     app_dummy();
 

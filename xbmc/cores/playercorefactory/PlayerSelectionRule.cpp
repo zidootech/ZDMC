@@ -27,6 +27,7 @@
 #include "utils/RegExp.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/XMLUtils.h"
+#include "utils/URIUtils.h"
 
 CPlayerSelectionRule::CPlayerSelectionRule(TiXmlElement* pRule)
 {
@@ -113,6 +114,95 @@ bool CPlayerSelectionRule::MatchesRegExp(const std::string& str, CRegExp& regExp
 void CPlayerSelectionRule::GetPlayers(const CFileItem& item, VECPLAYERCORES &vecCores)
 {
   CLog::Log(LOGDEBUG, "CPlayerSelectionRule::GetPlayers: considering rule: %s", m_name.c_str());
+  bool force_local = false;
+
+  if (item.m_strTitle.compare("Play with 3d mode") == 0)
+  {
+    // User want to play 3d, force to play with local
+    force_local = true;
+  }
+
+  if (m_name.compare("local")==0)
+  {
+    if (!force_local)
+    {
+      if (!CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_ENABLEEXTERNALPLAYER))
+      {
+        return;
+	  }
+    }
+
+    // only accept local and samba, nfs
+    std::string mainFile = item.GetPath();
+    CURL url(item.GetPath());
+    CLog::Log(LOGDEBUG, "CPlayerSelectionRule::GetPlayers - origin path = %s ", mainFile.c_str());
+    CLog::Log(LOGDEBUG, "CPlayerSelectionRule::GetPlayers - origin protocol = %s ", url.GetProtocol().c_str());
+    bool accept = false;
+    if (url.IsLocal() || mainFile.compare(0, 8, "/storage") == 0)
+    {
+      // local file
+      accept = true;
+    }
+    else if (url.IsProtocol("smb") || url.IsProtocol("nfs"))
+    {
+      // prefix with smb:// or nfs://
+      accept = true;
+    }
+    else  if (url.IsProtocol("bluray"))
+    {
+      CURL base(url.GetHostName());
+      if (base.IsLocal() || base.IsProtocol("smb") || base.IsProtocol("nfs"))
+      {
+        // prefix with bluray:///storage , bluray://smb://, bluray://nfs://
+        accept = true;
+      }
+      else if (base.IsProtocol("udf"))
+      {
+        CURL base1(base.GetHostName());
+        if (base1.IsLocal() || base1.IsProtocol("smb") || base1.IsProtocol("nfs"))
+        {
+          // prefix with bluray://udf:///storage, bluray://udf://smb://, bluray://udf://nfs://
+          accept = true;
+        }
+        else
+        {
+          mainFile = URIUtils::AddFileToFolder(base1.Get(), base1.GetFileName());
+        }
+      }
+      else
+      {
+        mainFile = URIUtils::AddFileToFolder(base.Get(), base.GetFileName());
+      }
+    }
+    else if (url.IsProtocol("udf"))
+    {
+      CURL base(url.GetHostName());
+      if (base.IsLocal() || base.IsProtocol("smb") || base.IsProtocol("nfs"))
+      {
+        // prefix with udf:///storage, udf://smb://, udf://nfs://
+        accept = true;
+      }
+      else
+      {
+        mainFile = URIUtils::AddFileToFolder(base.Get(), base.GetFileName());
+      }
+    }
+    else
+    {
+       mainFile = URIUtils::AddFileToFolder(url.Get(), url.GetFileName());
+    }
+
+    if (!accept) {
+       if (mainFile.compare(0, 8, "/storage") == 0)
+        accept = true;
+    }
+
+    if (!accept)
+    {
+      CLog::Log(LOGDEBUG, "CPlayerSelectionRule::GetPlayers -local player can't play media =%s", mainFile.c_str());
+      return;
+    }
+  }
 
   if (m_bStreamDetails && !item.HasVideoInfoTag()) return;
   if (m_tAudio >= 0 && (m_tAudio > 0) != item.IsAudio()) return;

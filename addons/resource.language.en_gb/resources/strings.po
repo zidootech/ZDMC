@@ -18266,3 +18266,15 @@ msgstr ""
 msgctxt "#3905"
 msgid "Exports nfo, thumbnail & fanart near the media file"
 msgstr ""
+
+
+#: system/settings/settings.xml
+msgctxt "#39100"
+msgid "Play video with external player"
+msgstr ""
+
+#: system/settings/settings.xml
+msgctxt "#39101"
+msgid "[Enabled] Kodi launch exteranl player to play when play video file.[CR][Disabled] Normal mode, kodi play the video itself"
+msgstr ""
+

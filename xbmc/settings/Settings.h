@@ -115,6 +115,7 @@ public:
   static const std::string SETTING_VIDEOPLAYER_TELETEXTSCALE;
   static const std::string SETTING_VIDEOPLAYER_STEREOSCOPICPLAYBACKMODE;
   static const std::string SETTING_VIDEOPLAYER_QUITSTEREOMODEONSTOP;
+  static const std::string SETTING_VIDEOPLAYER_ENABLEEXTERNALPLAYER;
   static const std::string SETTING_VIDEOPLAYER_RENDERMETHOD;
   static const std::string SETTING_VIDEOPLAYER_HQSCALERS;
   static const std::string SETTING_VIDEOPLAYER_USEAMCODEC;

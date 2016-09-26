@@ -182,6 +182,7 @@ CAESinkAUDIOTRACK::CAESinkAUDIOTRACK()
   m_last_head_pos = 0;
   m_sink_delay = 0;
   m_lastAddTimeMs = 0;
+  m_count_getdelay = 0;
 }
 
 CAESinkAUDIOTRACK::~CAESinkAUDIOTRACK()
@@ -474,6 +475,7 @@ void CAESinkAUDIOTRACK::Deinitialize()
   m_last_head_pos = 0;
   m_sink_delay = 0;
   m_lastAddTimeMs = 0;
+  m_count_getdelay = 0;
 
   delete m_at_jni;
   m_at_jni = NULL;
@@ -486,18 +488,28 @@ bool CAESinkAUDIOTRACK::IsInitialized()
 
 void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
 {
+  uint32_t initval = 50;
+  
   if (!m_at_jni)
   {
     status.SetDelay(0);
     return;
   }
 
-  if (m_passthrough && !WantsIEC61937() && m_sink_delay)
+  if (m_duration_written < 10.0)
+    initval = 50;
+  else
+    initval = 200;
+  m_count_getdelay ++;
+  if (m_passthrough && !WantsIEC61937() && (m_count_getdelay != initval))
+  //if (m_passthrough && !WantsIEC61937() && m_sink_delay)
   {
     status.SetDelay(m_sink_delay);
     return;
   }
 
+  m_count_getdelay = 0;
+  
   uint32_t head_pos = 0;
   double frameDiffMilli = 0;
   if (CJNIBuild::SDK_INT >= 23)
@@ -550,7 +562,8 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
     smootheDelay += d;
   smootheDelay /= m_smoothedDelayCount;
 
-  if (m_passthrough && !WantsIEC61937() && m_smoothedDelayCount == SMOOTHED_DELAY_MAX && !m_sink_delay)
+  //if (m_passthrough && !WantsIEC61937() && m_smoothedDelayCount == SMOOTHED_DELAY_MAX && !m_sink_delay)
+  if (m_passthrough && !WantsIEC61937())
     m_sink_delay = smootheDelay;
 
   if (g_advancedSettings.CanLogComponent(LOGAUDIO))
@@ -648,6 +661,7 @@ void CAESinkAUDIOTRACK::Drain()
   m_last_head_pos = 0;
   m_sink_delay = 0;
   m_lastAddTimeMs = 0;
+  m_count_getdelay = 0;
 }
 
 bool CAESinkAUDIOTRACK::WantsIEC61937()

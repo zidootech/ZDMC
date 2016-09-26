@@ -337,7 +337,8 @@ void CDVDMediaCodecInfo::RenderUpdate(const CRect &SrcRect, const CRect &DestRec
     if (g_advancedSettings.CanLogComponent(LOGVIDEO))
       CLog::Log(LOGDEBUG, "RenderUpdate: %f+%f-%fx%f  scale(%fx%f)", DestRect.x1, DestRect.y1, DestRect.Width(), DestRect.Height(), m_scaleX, m_scaleY);
 
-    CXBMCApp::get()->setVideoViewSurfaceRect(DestRect.x1 * m_scaleX, DestRect.y1 * m_scaleY, DestRect.x2 * m_scaleX, DestRect.y2 * m_scaleY);
+    //CXBMCApp::get()->setVideoViewSurfaceRect(DestRect.x1 * m_scaleX, DestRect.y1 * m_scaleY, DestRect.x2 * m_scaleX, DestRect.y2 * m_scaleY);
+    CXBMCApp::get()->setVideoViewSurfaceRect(DestRect.x1, DestRect.y1, DestRect.x2, DestRect.y2);
     cur_rect = DestRect;
     
     // setVideoViewSurfaceRect is async, so skip rendering this frame

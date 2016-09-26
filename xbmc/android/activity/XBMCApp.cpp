@@ -85,6 +85,13 @@
 #include "video/videosync/VideoSyncAndroid.h"
 #include "interfaces/AnnouncementManager.h"
 
+#include "PasswordManager.h"
+
+#ifdef HAS_FILESYSTEM_NFS
+#include "filesystem/NFSFile.h"
+using namespace XFILE;
+#endif
+
 #define GIGABYTES       1073741824
 
 using namespace std;
@@ -535,7 +542,7 @@ int CXBMCApp::android_printf(const char *format, ...)
   // For use before CLog is setup by XBMC_Run()
   va_list args;
   va_start(args, format);
-  int result = __android_log_vprint(ANDROID_LOG_VERBOSE, "SPMC", format, args);
+  int result = __android_log_vprint(ANDROID_LOG_VERBOSE, "ZDMC", format, args);
   va_end(args);
   return result;
 }
@@ -658,6 +665,114 @@ bool CXBMCApp::StartActivity(const string &package, const string &intent, const 
   if (xbmc_jnienv()->ExceptionCheck())
   {
     CLog::Log(LOGERROR, "CXBMCApp::StartActivity - ExceptionOccurred launching %s", package.c_str());
+    xbmc_jnienv()->ExceptionClear();
+    return false;
+  }
+
+  return true;
+}
+
+bool CXBMCApp::StartVideoPlayerActivity(const string &package, const string &intent, const string &dataType, const string &dataURI)
+{
+  CJNIIntent newIntent = intent.empty() ?
+    GetPackageManager().getLaunchIntentForPackage(package) :
+    CJNIIntent(intent);
+
+  if (!newIntent && CJNIBuild::SDK_INT >= 21)
+    newIntent = GetPackageManager().getLeanbackLaunchIntentForPackage(package);
+  if (!newIntent)
+    return false;
+  
+  CLog::Log(LOGINFO, "CXBMCApp::StartVideoPlayerActivity  - package = %s, intent = %s, dataURI =%s, dataType = %s",  
+    package.c_str(), intent.c_str(), dataURI.c_str(), dataType.c_str());
+  
+  if (!dataURI.empty())
+  {
+    if(URIUtils::HasExtension(dataURI, ".mpls"))
+    {
+      // bdmv
+      std::string path = dataURI;
+      int ret1 = path.rfind('/',path.length()-1);
+      if(ret1 < 0)
+              return false;
+      int ret2 = path.rfind('/',ret1-1);
+      if(ret2 < 0)
+              return false;
+      int ret3 = path.rfind('/',ret2-1);
+      if(ret3 < 0)
+              return false;
+      std::string parentPath = path.substr(0,ret3);
+      int tem = path.rfind('/',ret3-1);
+      if(tem < 0)
+              return false;
+      std::string name = parentPath.substr(tem+1, ret3-1);
+      CLog::Log(LOGINFO, "CXBMCApp::StartVideoPlayerActivity - string sub  %s,   %s ", parentPath.c_str(),name.c_str());
+
+      CJNIURI jniURI = CJNIURI::parse(parentPath);
+
+      if (!jniURI)
+        return false;
+
+      //newIntent.setAction("android.intent.action.VIEW");
+      //newIntent.setDataAndType(jniURI, dataType); 
+      newIntent.setData(jniURI); 
+    }else 
+    {
+      CJNIURI jniURI = CJNIURI::parse(dataURI);
+
+      if (!jniURI)
+        return false;
+
+      std::string from("Local");
+      newIntent.putExtra("SourceFrom", from);
+      newIntent.setDataAndType(jniURI, dataType); 
+    }
+    
+  }
+
+  newIntent.putExtra("MEDIA_BROWSER_USE_RT_MEDIA_PLAYER", true);
+  newIntent.addFlags(0x00008000); // Intent.FLAG_ACTIVITY_CLEAR_TASK
+  newIntent.addFlags(0x10000000); // Intent.FLAG_ACTIVITY_NEW_TASK
+  newIntent.setPackage(package);
+  newIntent.setClassName(package, "com.android.gallery3d.app.ZDMCActivity");
+
+  std::string mode("zdmc");
+  newIntent.putExtra("play_mode", mode);
+  std::string net_work = "local";
+
+  // check protocol
+  CURL url(dataURI) ;
+  if (url.IsProtocol("nfs")) {
+    net_work = "nfs";
+    CNFSFile *f = new CNFSFile();
+    if (!f->Open(url)) {
+      CLog::Log(LOGERROR, "CXBMCApp::StartVideoPlayerActivity - open nfs file failed:  %s", dataURI.c_str());
+      return false;
+    }
+    CLog::Log(LOGINFO, "CXBMCApp::StartVideoPlayerActivity - nfs, root = %s ", f->GetExportPath().c_str());
+    newIntent.putExtra("nfs_root", f->GetExportPath());
+    f->Close();
+  } else if (url.IsProtocol("smb")) {
+    net_work = "smb";
+    bool hit = CPasswordManager::GetInstance().AuthenticateURL(url);
+    std::string none("");
+    newIntent.putExtra("smb_username", none);
+    newIntent.putExtra("smb_password", none);
+    if (hit) {
+      CLog::Log(LOGINFO, "CXBMCApp::StartVideoPlayerActivity - smb, user = %s ", url.GetUserName().c_str());
+      CLog::Log(LOGINFO, "CXBMCApp::StartVideoPlayerActivity - smb, pass = %s ", url.GetPassWord().c_str());
+      if (!url.GetUserName().empty())
+        newIntent.putExtra("smb_username",  url.GetUserName());
+      if (!url.GetPassWord().empty())
+        newIntent.putExtra("smb_password", url.GetPassWord());
+    }
+  }
+  newIntent.putExtra("net_mode", net_work);
+
+  startActivity(newIntent);
+  if (xbmc_jnienv()->ExceptionCheck())
+  {
+    CLog::Log(LOGERROR, "CXBMCApp::StartVideoPlayerActivity - ExceptionOccurred launching %s", package.c_str());
     xbmc_jnienv()->ExceptionClear();
     return false;
   }

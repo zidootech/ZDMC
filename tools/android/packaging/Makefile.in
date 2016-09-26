@@ -15,7 +15,7 @@ COPYDIRS = system addons media
 GCC_VERSION=$(shell $(CC) -dumpversion)
 ZIP=zip
 
-SIGN_STORE=~/.android/@APP_NAME@.keystore
+SIGN_STORE=~/.android/debug.keystore
 SIGN_STOREPASS=android
 SIGN_KEY=androiddebugkey
 SIGN_KEYPASS=
@@ -111,7 +111,7 @@ res:
 	cp -fp media/drawable-mdpi/ic_launcher.png xbmc/res/drawable-mdpi/ic_launcher.png
 	cp -fp media/drawable-xhdpi/ic_launcher.png xbmc/res/drawable-xhdpi/ic_launcher.png
 	cp -fp media/drawable-xxhdpi/ic_launcher.png xbmc/res/drawable-xxhdpi/ic_launcher.png
-	cp -fp media/drawable-xxxhdpi/ic_launcher.png xbmc/res/drawable-xxxhdpi/ic_launcher.png
+#	cp -fp media/drawable-xxxhdpi/ic_launcher.png xbmc/res/drawable-xxxhdpi/ic_launcher.png
 	cp -fp media/drawable-xhdpi/banner.png xbmc/res/drawable-xhdpi/banner.png
 	cp xbmc/strings.xml xbmc/res/values/
 	cp xbmc/colors.xml xbmc/res/values/

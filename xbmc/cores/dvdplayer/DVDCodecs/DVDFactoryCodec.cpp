@@ -273,6 +273,15 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
 #endif
 
 #if defined(TARGET_ANDROID)
+#if 1 //REALTEK_PATCH
+   bool use_mediacodec = CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODEC);
+   if (use_mediacodec) {
+        bool use_mediacodec_surface = CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE);
+        if (!hint.software) {
+             if ( (pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(use_mediacodec_surface), hint, options)) ) return pCodec;
+        }
+   } 
+#else
   // Only give priority to Surface in 4K
   if (!hint.software && hint.height > 1080 && CSettings::GetInstance().GetBool(CSettings::SETTING_VIDEOPLAYER_USEMEDIACODECSURFACE))
   {
@@ -343,6 +352,7 @@ CDVDVideoCodec* CDVDFactoryCodec::CreateVideoCodec(CDVDStreamInfo &hint, const C
       if ( (pCodec = OpenCodec(new CDVDVideoCodecAndroidMediaCodec(true), hint, options)) ) return pCodec;
     }
   }
+#endif //REALTEK_PATCH  
 #endif
 
 #if defined(HAVE_LIBOPENMAX)

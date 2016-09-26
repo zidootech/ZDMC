@@ -27,6 +27,7 @@
 #endif
 #if defined(TARGET_ANDROID)
   #include "EGLNativeTypeAndroid.h"
+  #include "EGLNativeTypeRtkAndroid.h"
   #include "EGLNativeTypeAmlAndroid.h"
   #include "EGLNativeTypeRKAndroid.h"
 #endif
@@ -95,6 +96,7 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeWayland>(implementation)) ||
 #endif
 #if defined(TARGET_ANDROID)
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeRtkAndroid>(implementation)) ||
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlAndroid>(implementation)) ||
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeRKAndroid>(implementation)) ||
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAndroid>(implementation)) ||
