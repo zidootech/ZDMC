@@ -132,14 +132,14 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
   if (vm->GetEnv(reinterpret_cast<void**>(&env), version) != JNI_OK)
     return -1;
 
-  std::string appName = CCompileInfo::GetAppName();
+  std::string appName = "zdmc";//CCompileInfo::GetAppName();
   StringUtils::ToLower(appName);
-  std::string mainClass = "org/xbmc/" + appName + "/Main";
-  std::string bcReceiver = "org/xbmc/" + appName + "/XBMCBroadcastReceiver";
-  std::string frameListener = "org/xbmc/" + appName + "/XBMCOnFrameAvailableListener";
-  std::string settingsObserver = "org/xbmc/" + appName + "/XBMCSettingsContentObserver";
-  std::string audioFocusChangeListener = "org/xbmc/" + appName + "/XBMCOnAudioFocusChangeListener";
-  std::string inputDeviceListener = "org/xbmc/" + appName + "/XBMCInputDeviceListener";
+  std::string mainClass = "com/zidoo/" + appName + "/Main";
+  std::string bcReceiver = "com/zidoo/" + appName + "/XBMCBroadcastReceiver";
+  std::string frameListener = "com/zidoo/" + appName + "/XBMCOnFrameAvailableListener";
+  std::string settingsObserver = "com/zidoo/" + appName + "/XBMCSettingsContentObserver";
+  std::string audioFocusChangeListener = "com/zidoo/" + appName + "/XBMCOnAudioFocusChangeListener";
+  std::string inputDeviceListener = "com/zidoo/" + appName + "/XBMCInputDeviceListener";
 
   jclass cMain = env->FindClass(mainClass.c_str());
   if(cMain)

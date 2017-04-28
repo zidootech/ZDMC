@@ -1,4 +1,4 @@
-package org.xbmc.@APP_NAME_LC@;
+package com.zidoo.zdmc;
 
 import android.app.NativeActivity;
 import android.content.ComponentName;
@@ -15,11 +15,11 @@ import android.widget.RelativeLayout;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Handler;
-import org.xbmc.@APP_NAME_LC@.XBMCVideoView;
+import com.zidoo.zdmc.XBMCVideoView;
 
 public class Main extends NativeActivity implements Choreographer.FrameCallback
 {
-  private static final String TAG = "@APP_NAME_LC@";
+  private static final String TAG = "zdmc";
 
   private XBMCSettingsContentObserver mSettingsContentObserver;
   private XBMCInputDeviceListener mInputDeviceListener;
@@ -102,7 +102,7 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
       System.loadLibrary("smbclient");
     }
     catch (UnsatisfiedLinkError e) {}
-    System.loadLibrary("@APP_NAME_LC@");
+    System.loadLibrary("kodi");
 
     super.onCreate(savedInstanceState);
     getWindow().setFormat(PixelFormat.TRANSPARENT);
