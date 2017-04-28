@@ -7,12 +7,12 @@
 			<include>OpenClose_Right</include>
 			<control type="image">
 				<description>LOGO</description>
-				<left>1240</left>
-				<top>280</top>
-				<width>112</width>
-				<height>112</height>
+				<left>1224</left>
+				<top>264</top>
+				<width>144</width>
+				<height>144</height>
 				<aspectratio aligny="top" align="center">keep</aspectratio>
-				<texture colordiffuse="button_focus">icons/logo.png</texture>
+				<texture>icons/logo.png</texture>
 			</control>
 			<control type="image">
 				<left>1400</left>

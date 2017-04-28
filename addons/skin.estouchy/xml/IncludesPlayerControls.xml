@@ -23,10 +23,10 @@
 		</control>
 		<control type="image">
 			<description>Kodi Logo</description>
-			<posx>22</posx>
-			<posy>2</posy>
-			<width>150</width>
-			<height>75</height>
+			<posx>37</posx>
+			<posy>15</posy>
+			<width>120</width>
+			<height>49</height>
 			<texture>kodi_logo.png</texture>
 			<include>VisibleFadeEffect</include>
 		</control>
