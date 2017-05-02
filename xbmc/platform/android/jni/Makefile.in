@@ -83,6 +83,7 @@ SRCS      += RouteInfo.cpp
 SRCS      += InetAddress.cpp
 SRCS      += NetworkInterface.cpp
 SRCS      += Rect.cpp
+SRCS      += RtkHdmiManager.cpp
 
 LIB        = jni.a
 
