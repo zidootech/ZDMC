@@ -53,14 +53,20 @@ enum {
     RES_3840X2160P_23HZ,
     RES_3840X2160P_29HZ,
     RES_3840X2160P_60HZ,
+    // New supported from nuplayer version
+    RES_3840X2160P_50HZ,
+    RES_4096X2160P_50HZ,
+    RES_4096X2160P_60HZ,
+    RES_4096X2160P_25HZ,
+    RES_4096X2160P_30HZ,
+    RES_3840X2160P_59HZ,
+    RES_1080P_25HZ,
+    RES_1080P_30HZ,
     RES_RTK_MAX,
     RES_720P_25HZ, // will set to 720p@50hz
     RES_720P_30HZ, // will set to 720p@60hz
     RES_1080I_25HZ, // will set to 1080i@50hz
     RES_1080I_30HZ, // will set to 1080i@60hz
-    RES_1080P_25HZ, // will set to 1080p@50hz
-    RES_1080P_30HZ, // will set to 1080p@60hz
-    RES_3840X2160P_59HZ, // will set t 2160p@60hz
     RES_MAX
 };
 
@@ -96,14 +102,20 @@ static rtk_resolution_t rtk_resolutions[] = {
   {3840, 2160, 0, 23.976f}, // 3840X2160P@23HZ
   {3840, 2160, 0, 29.97}, // 3840X2160P@29HZ
   {3840, 2160, 0, 60.0f},  // 3840X2160P@60HZ
+  // New supported from nuplayer version
+  {3840, 2160, 0, 50.0f},  // 3840X2160P@50HZ
+  {4096, 2160, 0, 50.0f},  // 4096X2160P@50HZ
+  {4096, 2160, 0, 60.0f},  // 4096X2160P@60HZ
+  {4096, 2160, 0, 25.0f},  // 4096X2160P@25HZ
+  {4096, 2160, 0, 30.0f},  // 4096X2160P@30HZ
+  {3840, 2160, 0, 59.94f}, // 3840X2160P@59HZ
+  {1920, 1080, 0, 25.0f},  // 1080P@25HZ
+  {1920, 1080, 0, 30.0f},  // 1080P@30HZ
   {0, 0, 0, 0.0f},
   {1280, 720, 0, 25.0f},  //720p@25hz, will set to 720p@50hz
-  {1280, 720, 0, 30.0f}, //720p@30hz, will set to 720p@60hz
+  {1280, 720, 0, 30.0f},  //720p@30hz, will set to 720p@60hz
   {1920, 1080, 1, 25.0f}, //1080i@25hz,  will set to 1080i@50hz
-  {1920, 1080, 1, 30.0f},  //1080i@30HZ,  will set to 1080i@60hz
-  {1920, 1080, 0, 25.0f}, //1080p@25HZ,  will set to 1080p@50hz
-  {1920, 1080, 0, 30.0f},  //1080p@30HZ,  will set to 1080p@60hz
-  {3840, 2160, 0, 59.94f}, // 2160P@59HZ, will set to 2160p@60HZ
+  {1920, 1080, 1, 30.0f}  //1080i@30HZ,  will set to 1080i@60hz
 };
 
 static char *resolution_strings[] = {
@@ -130,14 +142,20 @@ static char *resolution_strings[] = {
   "3840x2160P @ 23Hz",
   "3840x2160P @ 29Hz",
   "3840x2160P @ 60Hz",
+  // New supported from nuplayer version
+  "3840x2160P @ 50Hz",
+  "4096x2160P @ 50Hz",
+  "4096x2160P @ 60Hz",
+  "4096x2160P @ 25Hz",
+  "4096x2160P @ 30Hz",
+  "3840x2160P @ 59Hz",
+  "1080P @ 25Hz",
+  "1080P @ 30Hz",
   "RES_RTK_MAX",
   "720P @ 25HZ",
   "720P @ 30HZ",
   "1080I @ 25HZ",
-  "1080I @ 30HZ",
-  "1080P @ 25HZ",
-  "1080P @ 30HZ",
-  "3840x2160P @ 59Hz"
+  "1080I @ 30HZ"
 };
 
 static int supported_resolutions[RES_MAX];
@@ -267,13 +285,16 @@ bool CEGLNativeTypeRtkAndroid::SetNativeResolution(const RESOLUTION_INFO &res)
         case 3840:
             return SetDisplayResolution(RES_3840X2160P_60HZ);
             break;
+        case 4096:
+            return SetDisplayResolution(RES_4096X2160P_60HZ);
+            break;
       }
       break;
     case 599:
       switch(res.iScreenWidth)
       {
          case 3480:
-           return SetDisplayResolution(RES_3840X2160P_60HZ);  // no 2160p @ 59, set to 2160p @ 60HZ
+           return SetDisplayResolution(RES_3840X2160P_59HZ);
            break;
          case 1280:
            return SetDisplayResolution(RES_720P_59HZ);
@@ -299,6 +320,12 @@ bool CEGLNativeTypeRtkAndroid::SetNativeResolution(const RESOLUTION_INFO &res)
           else
             return SetDisplayResolution(RES_1080P_50HZ);
           break;
+        case 3840:
+          return SetDisplayResolution(RES_3840X2160P_50HZ);
+          break;
+        case 4096:
+          return SetDisplayResolution(RES_4096X2160P_50HZ);
+          break;
       }
       break;
     case 300:
@@ -309,12 +336,18 @@ bool CEGLNativeTypeRtkAndroid::SetNativeResolution(const RESOLUTION_INFO &res)
           break;
         case 1280:
           return SetDisplayResolution(RES_720P_60HZ); // HACK: no 720@30HZ, set to 720p@60HZ  
-          break;          
+          break;
+        case 4096:
+          return SetDisplayResolution(RES_4096X2160P_30HZ); 
+          break;
+        case 1920:
+          return SetDisplayResolution(RES_1080P_30HZ); 
+          break;
         default:
           if (res.dwFlags & D3DPRESENTFLAG_INTERLACED)  
-            return SetDisplayResolution(RES_1080I_60HZ); // NO 1080 @ 30, set to 1080 @ 60
+            return SetDisplayResolution(RES_1080I_60HZ); // NO 1080I @ 30, set to 1080I @ 60
           else
-            return SetDisplayResolution(RES_1080P_60HZ);
+            return SetDisplayResolution(RES_1080P_30HZ);
           break;
       }
       break;
@@ -338,11 +371,17 @@ bool CEGLNativeTypeRtkAndroid::SetNativeResolution(const RESOLUTION_INFO &res)
         case 1280:
           return SetDisplayResolution(RES_720P_50HZ); // no 720 @ 25, set to 720 @ 50
           break;
+        case 4096:
+          return SetDisplayResolution(RES_4096X2160P_25HZ);
+          break;
+        case 1920:
+          return SetDisplayResolution(RES_1080P_25HZ);
+          break;
         default: 
           if (res.dwFlags & D3DPRESENTFLAG_INTERLACED)
             return SetDisplayResolution(RES_1080I_50HZ);
           else
-            return SetDisplayResolution(RES_1080P_50HZ);
+            return SetDisplayResolution(RES_1080P_25HZ);
           break;
       }
       break;
@@ -381,38 +420,6 @@ void CEGLNativeTypeRtkAndroid::GuessResolution(int mode, std::vector<RESOLUTION_
     RESOLUTION_INFO res;
     //CLog::Log(LOGDEBUG, "RTKEGL:GuessResolution, mode = %d", mode);
     switch (mode) {
-      case RES_3840X2160P_60HZ:
-        if (SysModeToResolution(RES_3840X2160P_59HZ, &res) && (supported_resolutions[RES_3840X2160P_59HZ] == 0)) {
-          res.iWidth = m_fb_res.iWidth;
-          res.iHeight = m_fb_res.iHeight;
-          resolutions.push_back(res);
-          supported_resolutions[RES_3840X2160P_59HZ] = 1;
-        }
-        break;
-      case RES_3840X2160P_24HZ:
-        if (SysModeToResolution(RES_3840X2160P_23HZ, &res) && (supported_resolutions[RES_3840X2160P_23HZ] == 0)) {
-          res.iWidth = m_fb_res.iWidth;
-          res.iHeight = m_fb_res.iHeight;
-          resolutions.push_back(res);
-          supported_resolutions[RES_3840X2160P_23HZ] = 1;
-        }
-        break;
-      case RES_1080P_24HZ:
-        if (SysModeToResolution(RES_1080P_23HZ, &res) && (supported_resolutions[RES_1080P_23HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_1080P_23HZ] = 1;
-        }
-        break;
-      case RES_3840X2160P_30HZ:
-       if (SysModeToResolution(RES_3840X2160P_29HZ, &res) && (supported_resolutions[RES_3840X2160P_29HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_3840X2160P_29HZ] = 1;
-        }
-        break;
       case RES_720P_50HZ:
         if (SysModeToResolution(RES_720P_25HZ, &res) && (supported_resolutions[RES_720P_25HZ] == 0)) {
             res.iWidth = m_fb_res.iWidth;
@@ -427,12 +434,6 @@ void CEGLNativeTypeRtkAndroid::GuessResolution(int mode, std::vector<RESOLUTION_
             res.iHeight = m_fb_res.iHeight;
             resolutions.push_back(res);
             supported_resolutions[RES_720P_30HZ] = 1;
-        }
-        if (SysModeToResolution(RES_720P_59HZ, &res) && (supported_resolutions[RES_720P_59HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_720P_59HZ] =1;
         }
         break;
      case RES_1080I_50HZ:
@@ -449,36 +450,6 @@ void CEGLNativeTypeRtkAndroid::GuessResolution(int mode, std::vector<RESOLUTION_
             res.iHeight = m_fb_res.iHeight;
             resolutions.push_back(res);
             supported_resolutions[RES_1080I_30HZ] = 1;
-        }
-
-        if (SysModeToResolution(RES_1080I_59HZ, &res) && (supported_resolutions[RES_1080I_59HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_1080I_59HZ] = 1;
-        }
-        break;
-     case RES_1080P_50HZ:
-        if (SysModeToResolution(RES_1080P_25HZ, &res) && (supported_resolutions[RES_1080P_25HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_1080P_25HZ] = 1;
-        }
-        break;
-      case RES_1080P_60HZ:
-        if (SysModeToResolution(RES_1080P_30HZ, &res) && (supported_resolutions[RES_1080P_30HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_1080P_30HZ]  = 1;
-        }
-
-        if (SysModeToResolution(RES_1080P_59HZ, &res) && (supported_resolutions[RES_1080P_59HZ] == 0)) {
-            res.iWidth = m_fb_res.iWidth;
-            res.iHeight = m_fb_res.iHeight;
-            resolutions.push_back(res);
-            supported_resolutions[RES_1080P_59HZ]  = 1;
         }
         break;
       default:
