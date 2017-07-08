@@ -1,6 +1,6 @@
 APP_NAME Kodi
-COMPANY_NAME XBMC-Foundation
-WEBSITE http://kodi.tv
+COMPANY_NAME Zidoo
+WEBSITE http://www.zidoo.tv/
 VERSION_MAJOR 17
 VERSION_MINOR 3
 VERSION_TAG

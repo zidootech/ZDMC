@@ -955,7 +955,7 @@
 					<aspectratio>keep</aspectratio>
 					<width>56</width>
 					<height>56</height>
-					<texture colordiffuse="button_focus">icons/logo.png</texture>
+					<texture>icons/logo.png</texture>
 				</control>
 				<control type="image">
 					<left>40</left>

@@ -112,6 +112,13 @@ CJNIIntent CJNIIntent::putExtra(const std::string &name, const std::string &valu
     jcast<jhstring>(name), jcast<jhstring>(value));
 }
 
+CJNIIntent CJNIIntent::putExtra(const std::string &name, bool value)
+{
+  return (CJNIIntent)call_method<jhobject>(m_object,
+    "putExtra", "(Ljava/lang/String;Z)Landroid/content/Intent;",
+    jcast<jhstring>(name), value);
+}
+
 void CJNIIntent::addFlags(int flags)
 {
   call_method<jhobject>(m_object,
@@ -140,11 +147,11 @@ void CJNIIntent::setClassName(const std::string &packageName, const std::string 
     jcast<jhstring>(packageName), jcast<jhstring>(className));
 }
 
-void CJNIIntent::setData(const std::string &uri)
+void CJNIIntent::setData(const CJNIURI &uri)
 {
   call_method<jhobject>(m_object,
     "setData", "(Landroid/net/Uri;)Landroid/content/Intent;",
-    jcast<jhstring>(uri));
+    uri.get_raw());
 }
 
 void CJNIIntent::setDataAndType(const CJNIURI &uri, const std::string &type)

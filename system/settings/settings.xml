@@ -2,7 +2,14 @@
 <settings>
   <section id="player" label="14200" help="38100">
     <category id="videoplayer" label="14215" help="38103">
-      <group id="1" label="14230">
+      <group id="1">
+        <setting id="videoplayer.enableexternalplayer" type="boolean" label="39100" help="39101">
+          <level>1</level>
+          <default>true</default>
+          <control type="toggle" />
+        </setting>
+      </group>
+      <group id="2" label="14230">
         <setting id="videoplayer.autoplaynextitem" type="boolean" label="13433" help="36152">
           <level>0</level>
           <default>false</default>
@@ -33,7 +40,7 @@
           </control>
         </setting>
       </group>
-      <group id="2" label="19177">
+      <group id="3" label="19177">
         <setting id="videoplayer.adjustrefreshrate" type="integer" label="170" help="36164">
           <level>1</level>
           <default>0</default> <!-- ADJUST_REFRESHRATE_OFF -->
@@ -78,7 +85,7 @@
           <control type="list" format="string" />
         </setting>
       </group>
-      <group id="3" label="14231">
+      <group id="4" label="14231">
         <setting id="videoplayer.rendermethod" type="integer" label="13415" help="36153">
           <level>2</level>
           <default>0</default> <!-- RENDER_METHOD_AUTO -->
@@ -324,7 +331,7 @@
           <control type="toggle" />
         </setting>
       </group>
-      <group id="4" label="14232">
+      <group id="5" label="14232">
         <setting id="videoplayer.stereoscopicplaybackmode" type="integer" label="36520" help="36537">
           <level>2</level>
           <default>0</default>
@@ -344,7 +351,7 @@
           <control type="toggle" />
         </setting>
       </group>
-      <group id="5" label="14233">
+      <group id="6" label="14233">
         <setting id="videoplayer.teletextenabled" type="boolean" label="23050" help="36174">
           <level>3</level>
           <default>true</default>
@@ -3077,7 +3084,7 @@
         </setting>
         <setting id="lookandfeel.font" type="string" parent="lookandfeel.skin" label="13303" help="36107">
           <level>1</level>
-          <default>Default</default>
+          <default>Arial</default>
           <constraints>
             <options>skinfonts</options>
           </constraints>
