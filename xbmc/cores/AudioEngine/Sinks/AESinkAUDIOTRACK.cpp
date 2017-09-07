@@ -46,7 +46,10 @@ using namespace jni;
 // is the max TrueHD package
 const unsigned int MAX_RAW_AUDIO_BUFFER_HD = 61440;
 const unsigned int MAX_RAW_AUDIO_BUFFER = 16384;
-const unsigned int MOVING_AVERAGE_MAX_MEMBERS = 5;
+//rtk modify
+//const unsigned int MOVING_AVERAGE_MAX_MEMBERS = 5;
+const unsigned int MOVING_AVERAGE_MAX_MEMBERS = 4;
+//rtk end
 const uint64_t UINT64_LOWER_BYTES = 0x00000000FFFFFFFF;
 const uint64_t UINT64_UPPER_BYTES = 0xFFFFFFFF00000000;
 
@@ -212,6 +215,10 @@ CAESinkAUDIOTRACK::CAESinkAUDIOTRACK()
   m_audiotrackbuffer_sec = 0.0;
   m_at_jni = NULL;
   m_duration_written = 0;
+  //rtk modify
+  m_skip_delay =0;
+  m_sink_delay = 0.0;
+  //rtk end
   m_offset = -1;
   m_headPos = 0;
   m_volume = -1;
@@ -510,6 +517,10 @@ void CAESinkAUDIOTRACK::Deinitialize()
   m_at_jni->release();
 
   m_duration_written = 0;
+  //rtk modify
+  m_skip_delay =0;
+  m_sink_delay = 0.0;
+  //rtk end
   m_offset = -1;
   m_headPos = 0;
 
@@ -532,7 +543,23 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
     status.SetDelay(0);
     return;
   }
+  //rtk modify
+  int rtk_skip = 15;
+  if (m_encoding == CJNIAudioFormat::ENCODING_DTS || m_encoding == CJNIAudioFormat::ENCODING_DTS_HD)
+     rtk_skip = 30;
+  else
+     rtk_skip = 15;
 
+  m_skip_delay++;
+
+  if (m_skip_delay < rtk_skip) {
+     m_skip_delay++;
+     status.SetDelay(m_sink_delay);
+     return;
+  }else {
+     m_skip_delay = 0;
+  }
+  //rtk end
   // In their infinite wisdom, Google decided to make getPlaybackHeadPosition
   // return a 32bit "int" that you should "interpret as unsigned."  As such,
   // for wrap saftey, we need to do all ops on it in 32bit integer math.
@@ -576,6 +603,9 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
     {
       const double d = GetMovingAverageDelay(GetCacheTotal());
       status.SetDelay(d);
+  //rtk modify
+      m_sink_delay = d;
+  //rtk end
       return;
     }
   }
@@ -593,6 +623,9 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
   const double d = GetMovingAverageDelay(delay);
 
   status.SetDelay(d);
+  //rtk modify
+  m_sink_delay = d;
+  //rtk end
 }
 
 double CAESinkAUDIOTRACK::GetLatency()
@@ -750,6 +783,10 @@ void CAESinkAUDIOTRACK::Drain()
   CLog::Log(LOGDEBUG, "Draining Audio");
   m_at_jni->stop();
   m_duration_written = 0;
+  //rtk modify
+  m_skip_delay =0;
+  m_sink_delay = 0.0;
+  //rtk end
   m_offset = -1;
   m_headPos = 0;
   m_extTimer.SetExpired();
