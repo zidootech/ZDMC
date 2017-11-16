@@ -24,6 +24,7 @@
 #include <assert.h>
 #if defined(TARGET_ANDROID)
   #include "EGLNativeTypeAndroid.h"
+  #include "EGLNativeTypeRtkAndroid.h"
 #if defined(HAS_LIBAMCODEC)
   #include "EGLNativeTypeAmlAndroid.h"
 #endif
@@ -94,6 +95,7 @@ bool CEGLWrapper::Initialize(const std::string &implementation)
 #if defined(TARGET_ANDROID) && defined(HAS_LIBAMCODEC)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAmlAndroid>(implementation))
 #elif defined(TARGET_ANDROID)
+      (nativeGuess = CreateEGLNativeType<CEGLNativeTypeRtkAndroid>(implementation)) ||
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeAndroid>(implementation))
 #elif defined(TARGET_RASPBERRY_PI)
       (nativeGuess = CreateEGLNativeType<CEGLNativeTypeRaspberryPI>(implementation))

@@ -1,4 +1,4 @@
-package org.xbmc.@APP_NAME_LC@;
+package com.zidoo.zdmc;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -519,7 +519,7 @@ public class Splash extends Activity {
       String sOldUserDir;
       File fOldUserDir;
       try {
-        sOldUserDir = getExternalFilesDir(null).getParentFile().getParentFile() + "/org.xbmc.xbmc/files/.xbmc";
+        sOldUserDir = getExternalFilesDir(null).getParentFile().getParentFile() + "/com.zidoo.xbmc/files/.xbmc";
         fOldUserDir = new File(sOldUserDir);
         if (!fOldUserDir.exists())
           return;
@@ -527,7 +527,7 @@ public class Splash extends Activity {
         return;
       }
 
-      File fNewUserDir = new File(getExternalFilesDir(null), ".@APP_NAME_LC@");
+      File fNewUserDir = new File(getExternalFilesDir(null), ".kodi");
       String sKodiMigrated = fNewUserDir.getAbsolutePath() + "/.kodi_data_was_migrated";
       File fKodiMigrated = new File(sKodiMigrated);
 
@@ -657,7 +657,7 @@ public class Splash extends Activity {
   protected void startXBMC() {
     // Run @APP_NAME@
     Intent intent = getIntent();
-    intent.setClass(this, org.xbmc.@APP_NAME_LC@.Main.class);
+    intent.setClass(this, com.zidoo.zdmc.Main.class);
     intent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
     startActivity(intent);
     finish();
@@ -674,7 +674,7 @@ public class Splash extends Activity {
         .getRunningTasks(Integer.MAX_VALUE);
     for (RunningTaskInfo task : tasks)
       if (task.topActivity.toString().equalsIgnoreCase(
-          "ComponentInfo{org.xbmc.@APP_NAME_LC@/org.xbmc.@APP_NAME_LC@.Main}")) {
+          "ComponentInfo{com.zidoo.zdmc/com.zidoo.zdmc.Main}")) {
         // @APP_NAME@ already running; just activate it
         startXBMC();
         return;

@@ -2299,7 +2299,10 @@ CSampleBuffer* CActiveAE::SyncStream(CActiveAEStream *stream)
   }
 
   double error;
-  double threshold = 100;
+  //rtk modify
+  double threshold = 2000;
+  //double threshold = 100;
+  //rtk end
   if (stream->m_resampleMode)
   {
     threshold *= 2;

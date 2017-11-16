@@ -19787,3 +19787,14 @@ msgstr ""
 msgctxt "#39010"
 msgid "Select sort method"
 msgstr ""
+
+
+#: system/settings/settings.xml
+msgctxt "#39100"
+msgid "Play video with external player"
+msgstr ""
+
+#: system/settings/settings.xml
+msgctxt "#39101"
+msgid "[Enabled] Kodi will launch exteranl player when playing a video file.[CR][Disabled] Normal mode, Kodi will play a video itself"
+msgstr ""

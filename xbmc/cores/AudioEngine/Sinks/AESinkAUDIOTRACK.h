@@ -89,4 +89,8 @@ private:
   bool               m_passthrough;
   double             m_audiotrackbuffer_sec;
   int                m_encoding;
+  //rtk modify
+  int                m_skip_delay;
+  double             m_sink_delay;
+  //rtk end
 };
