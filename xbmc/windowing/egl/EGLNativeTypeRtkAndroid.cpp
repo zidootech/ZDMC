@@ -35,33 +35,33 @@ enum {
     RES_PAL,
     RES_480P_60HZ,
     RES_576P_50HZ,
-    RES_720P_50HZ,
+    RES_720P_50HZ, //5
     RES_720P_60HZ,
     RES_1080I_50HZ,
     RES_1080I_60HZ,
     RES_1080P_50HZ,
-    RES_1080P_60HZ,
+    RES_1080P_60HZ, //10
     RES_3840X2160P_24HZ,
     RES_3840X2160P_25HZ,
     RES_3840X2160P_30HZ,
     RES_4096X2160P_24HZ,
-    RES_1080P_24HZ,
+    RES_1080P_24HZ, //15
     RES_720P_59HZ,
     RES_1080I_59HZ,
     RES_1080P_23HZ,
     RES_1080P_59HZ,
-    RES_3840X2160P_23HZ,
+    RES_3840X2160P_23HZ, //20
     RES_3840X2160P_29HZ,
     RES_3840X2160P_60HZ,
     // New supported from nuplayer version
     RES_3840X2160P_50HZ,
     RES_4096X2160P_50HZ,
-    RES_4096X2160P_60HZ,
+    RES_4096X2160P_60HZ, //25
     RES_4096X2160P_25HZ,
     RES_4096X2160P_30HZ,
     RES_3840X2160P_59HZ,
     RES_1080P_25HZ,
-    RES_1080P_30HZ,
+    RES_1080P_30HZ, //30
     RES_RTK_MAX,
     RES_720P_25HZ, // will set to 720p@50hz
     RES_720P_30HZ, // will set to 720p@60hz
@@ -450,6 +450,22 @@ void CEGLNativeTypeRtkAndroid::GuessResolution(int mode, std::vector<RESOLUTION_
             res.iHeight = m_fb_res.iHeight;
             resolutions.push_back(res);
             supported_resolutions[RES_1080I_30HZ] = 1;
+        }
+        break;
+      case RES_1080P_24HZ:
+        if (SysModeToResolution(RES_1080P_23HZ, &res) && (supported_resolutions[RES_1080P_23HZ] == 0)) {
+            res.iWidth = m_fb_res.iWidth;
+            res.iHeight = m_fb_res.iHeight;
+            resolutions.push_back(res);
+            supported_resolutions[RES_1080P_23HZ] = 1;
+        }
+        break;
+      case RES_3840X2160P_24HZ:
+        if (SysModeToResolution(RES_3840X2160P_23HZ, &res) && (supported_resolutions[RES_3840X2160P_23HZ] == 0)) {
+            res.iWidth = m_fb_res.iWidth;
+            res.iHeight = m_fb_res.iHeight;
+            resolutions.push_back(res);
+            supported_resolutions[RES_3840X2160P_23HZ] = 1;
         }
         break;
       default:
