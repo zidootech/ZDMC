@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.content;
+package com.zidoo.zdmc.content;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.TimingLogger;
 
-import @APP_PACKAGE@.XBMCProperties;
+import com.zidoo.zdmc.XBMCProperties;
 
 public class XBMCYTDLContentProvider extends XBMCContentProvider
 {

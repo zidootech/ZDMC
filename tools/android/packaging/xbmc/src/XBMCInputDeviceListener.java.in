@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.util.Log;

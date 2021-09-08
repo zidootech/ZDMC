@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.content;
+package com.zidoo.zdmc.content;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -7,9 +7,9 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import @APP_PACKAGE@.XBMCFile;
-import @APP_PACKAGE@.XBMCJsonRPC;
-import @APP_PACKAGE@.model.File;
+import com.zidoo.zdmc.XBMCFile;
+import com.zidoo.zdmc.XBMCJsonRPC;
+import com.zidoo.zdmc.model.File;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

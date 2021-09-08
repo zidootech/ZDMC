@@ -10,7 +10,7 @@ PLATFORM_OBJS =
 EXCLUDED_ADDONS =
 
 CMAKE_SOURCE_DIR = $(shell cd $(CURDIR)/../../..; pwd)
-APP_PACKAGE_DIR = $(subst .,/,@APP_PACKAGE@)
+APP_PACKAGE_DIR = $(subst .,/,com.zidoo.zdmc)
 COPYDIRS = system addons media
 GCC_VERSION=$(shell $(CC) -dumpversion)
 ZIP=zip

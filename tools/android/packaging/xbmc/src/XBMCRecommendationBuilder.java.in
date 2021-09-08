@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -7,7 +7,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 
-import @APP_PACKAGE@.R;
+import com.zidoo.zdmc.R;
 
 /*
  * This class builds recommendations as notifications with videos as inputs.

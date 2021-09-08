@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.interfaces;
+package com.zidoo.zdmc.interfaces;
 
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;

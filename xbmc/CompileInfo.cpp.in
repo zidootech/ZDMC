@@ -26,7 +26,7 @@ int CCompileInfo::GetMinor()
 
 const char* CCompileInfo::GetPackage()
 {
-  return "@APP_PACKAGE@";
+  return "com.zidoo.zdmc";
 }
 
 const char* CCompileInfo::GetClass()

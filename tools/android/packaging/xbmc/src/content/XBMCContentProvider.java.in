@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.content;
+package com.zidoo.zdmc.content;
 
 import android.content.ContentProvider;
 
@@ -8,5 +8,5 @@ import android.content.ContentProvider;
 
 public abstract class XBMCContentProvider extends ContentProvider
 {
-  public static final String AUTHORITY_ROOT = "@APP_PACKAGE@";
+  public static final String AUTHORITY_ROOT = "com.zidoo.zdmc";
 }

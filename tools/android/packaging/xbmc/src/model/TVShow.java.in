@@ -1,6 +1,6 @@
-package @APP_PACKAGE@.model;
+package com.zidoo.zdmc.model;
 
-import @APP_PACKAGE@.model.Media;
+import com.zidoo.zdmc.model.Media;
 
 /**
  * Created by cbro on 22/12/2017

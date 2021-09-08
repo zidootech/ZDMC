@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import android.content.Context;
 import android.os.Build.VERSION_CODES;
@@ -22,7 +22,7 @@ import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
-import @APP_PACKAGE@.channels.util.TvUtil;
+import com.zidoo.zdmc.channels.util.TvUtil;
 
 public class Main extends NativeActivity implements Choreographer.FrameCallback
 {

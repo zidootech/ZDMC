@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -36,7 +36,7 @@ public class XBMCSearchableActivity extends Activity
   private void search(String query)
   {
     Cursor c = getContentResolver().query(
-            Uri.parse("content://@APP_PACKAGE@.media/search/" + query), null, null,
+            Uri.parse("content://com.zidoo.zdmc.media/search/" + query), null, null,
             null, null);
 
     // Specify the columns we want to display in the result
@@ -61,7 +61,7 @@ public class XBMCSearchableActivity extends Activity
 
     Intent newIntent = new Intent(origIntent.getAction(), data);
     newIntent.setDataAndType(data, "video/*");
-    newIntent.setClass(this, @APP_PACKAGE@.Main.class);
+    newIntent.setClass(this, com.zidoo.zdmc.Main.class);
     newIntent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
     startActivity(newIntent);
     finish();

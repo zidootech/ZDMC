@@ -12,7 +12,7 @@
  * the License.
  */
 
-package @APP_PACKAGE@.channels;
+package com.zidoo.zdmc.channels;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,14 +27,14 @@ import android.os.AsyncTask;
 import android.util.Log;
 import androidx.tvprovider.media.tv.TvContractCompat;
 
-import @APP_PACKAGE@.R;
-import @APP_PACKAGE@.XBMCJsonRPC;
-import @APP_PACKAGE@.XBMCURIUtils;
-import @APP_PACKAGE@.channels.model.Subscription;
-import @APP_PACKAGE@.channels.model.XBMCDatabase;
-import @APP_PACKAGE@.channels.util.TvUtil;
-import @APP_PACKAGE@.content.XBMCFileContentProvider;
-import @APP_PACKAGE@.model.File;
+import com.zidoo.zdmc.R;
+import com.zidoo.zdmc.XBMCJsonRPC;
+import com.zidoo.zdmc.XBMCURIUtils;
+import com.zidoo.zdmc.channels.model.Subscription;
+import com.zidoo.zdmc.channels.model.XBMCDatabase;
+import com.zidoo.zdmc.channels.util.TvUtil;
+import com.zidoo.zdmc.content.XBMCFileContentProvider;
+import com.zidoo.zdmc.model.File;
 
 /**
  * A service that will populate the TV provider with channels that every user should have. Once a

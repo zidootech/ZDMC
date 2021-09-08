@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.content;
+package com.zidoo.zdmc.content;
 
 import android.app.SearchManager;
 import android.content.ContentValues;
@@ -7,7 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
-import @APP_PACKAGE@.XBMCJsonRPC;
+import com.zidoo.zdmc.XBMCJsonRPC;
 
 public class XBMCMediaContentProvider extends XBMCContentProvider
 {

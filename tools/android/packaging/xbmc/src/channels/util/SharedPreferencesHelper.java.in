@@ -13,13 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package @APP_PACKAGE@.channels.util;
+package com.zidoo.zdmc.channels.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import @APP_PACKAGE@.model.Media;
-import @APP_PACKAGE@.channels.model.Subscription;
+import com.zidoo.zdmc.model.Media;
+import com.zidoo.zdmc.channels.model.Subscription;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.util.ArrayList;
@@ -41,11 +41,11 @@ public final class SharedPreferencesHelper {
 
   private static final String TAG = "SharedPreferencesHelper";
 
-  private static final String PREFS_NAME = "@APP_PACKAGE@";
+  private static final String PREFS_NAME = "com.zidoo.zdmc";
   private static final String PREFS_SUBSCRIPTIONS_KEY =
-          "@APP_PACKAGE@.prefs.SUBSCRIPTIONS";
+          "com.zidoo.zdmc.prefs.SUBSCRIPTIONS";
   private static final String PREFS_SUBSCRIBED_MediaS_PREFIX =
-          "@APP_PACKAGE@.prefs.SUBSCRIBED_MediaS_";
+          "com.zidoo.zdmc.prefs.SUBSCRIBED_MediaS_";
 
   private static final Gson mGson = new Gson();
 

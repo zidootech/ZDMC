@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,7 +23,7 @@ public class XBMCBroadcastReceiver extends BroadcastReceiver
         // Run @APP_NAME@
         Intent i = new Intent();
         PackageManager manager = context.getPackageManager();
-        i = manager.getLaunchIntentForPackage("@APP_PACKAGE@");
+        i = manager.getLaunchIntentForPackage("com.zidoo.zdmc");
         i.addCategory(Intent.CATEGORY_LAUNCHER);
         context.startActivity(i);
       }

@@ -1,4 +1,4 @@
-package @APP_PACKAGE@;
+package com.zidoo.zdmc;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -787,7 +787,7 @@ public class Splash extends Activity
   {
     // Run @APP_NAME@
     Intent intent = getIntent();
-    intent.setClass(this, @APP_PACKAGE@.Main.class);
+    intent.setClass(this, com.zidoo.zdmc.Main.class);
     intent.addFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
     startActivity(intent);
     finish();
@@ -808,7 +808,7 @@ public class Splash extends Activity
             .getRunningTasks(Integer.MAX_VALUE);
     for (RunningTaskInfo task : tasks)
       if (task.topActivity.toString().equalsIgnoreCase(
-              "ComponentInfo{@APP_PACKAGE@/@APP_PACKAGE@.Main}"))
+              "ComponentInfo{com.zidoo.zdmc/com.zidoo.zdmc.Main}"))
       {
         // @APP_NAME@ already running; just activate it
         startXBMC();

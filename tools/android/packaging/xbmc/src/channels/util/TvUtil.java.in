@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package @APP_PACKAGE@.channels.util;
+package com.zidoo.zdmc.channels.util;
 
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -37,10 +37,10 @@ import androidx.tvprovider.media.tv.Channel;
 import androidx.tvprovider.media.tv.ChannelLogoUtils;
 import androidx.tvprovider.media.tv.TvContractCompat;
 
-import @APP_PACKAGE@.Splash;
-import @APP_PACKAGE@.channels.SyncChannelJobService;
-import @APP_PACKAGE@.channels.SyncProgramsJobService;
-import @APP_PACKAGE@.channels.model.Subscription;
+import com.zidoo.zdmc.Splash;
+import com.zidoo.zdmc.channels.SyncChannelJobService;
+import com.zidoo.zdmc.channels.SyncProgramsJobService;
+import com.zidoo.zdmc.channels.model.Subscription;
 
 /**
  * Manages interactions with the TV Provider.

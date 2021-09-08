@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?><!-- BEGIN_INCLUDE(manifest) -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="@APP_PACKAGE@"
+    package="com.zidoo.zdmc"
     android:installLocation="auto"
     android:versionCode="@APP_VERSION_CODE_ANDROID@"
     android:versionName="@APP_VERSION@">
@@ -120,16 +120,16 @@
 
         <provider
             android:name=".content.XBMCMediaContentProvider"
-            android:authorities="@APP_PACKAGE@.media"
+            android:authorities="com.zidoo.zdmc.media"
             android:exported="true" />
 
         <provider
             android:name=".content.XBMCFileContentProvider"
-            android:authorities="@APP_PACKAGE@.file"
+            android:authorities="com.zidoo.zdmc.file"
             android:exported="true" />
         <provider
             android:name=".content.XBMCYTDLContentProvider"
-            android:authorities="@APP_PACKAGE@.ytdl"
+            android:authorities="com.zidoo.zdmc.ytdl"
             android:exported="true" />
 
         <activity android:name=".XBMCSearchableActivity" >

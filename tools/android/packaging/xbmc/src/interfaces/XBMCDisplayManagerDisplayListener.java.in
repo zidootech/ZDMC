@@ -1,4 +1,4 @@
-package @APP_PACKAGE@.interfaces;
+package com.zidoo.zdmc.interfaces;
 
 import android.hardware.display.DisplayManager;
 
