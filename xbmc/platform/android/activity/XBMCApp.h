@@ -42,6 +42,7 @@ class IInputDeviceCallbacks;
 class IInputDeviceEventHandler;
 class CVideoSyncAndroid;
 class CJNIActivityManager;
+class CJNIRtkHdmiManager;
 
 typedef struct _JNIEnv JNIEnv;
 
@@ -202,6 +203,14 @@ public:
   void setVideosurfaceInUse(bool videosurfaceInUse);
 
   bool GetMemoryInfo(long& availMem, long& totalMem);
+
+  static void initHdmiManager();
+  static void deInitHdmiManager();
+  static bool checkIfHDMIPlugged();
+  static std::vector<int> getVideoFormat();
+  static int setTVSystem(int tvSystem);
+  static int getTVSystem();
+
 protected:
   // limit who can access Volume
   friend class CAESinkAUDIOTRACK;
@@ -265,6 +274,8 @@ private:
   static uint32_t m_playback_state;
   static int64_t m_frameTimeNanos;
   static float m_refreshRate;
+
+  static CJNIRtkHdmiManager *mHdmiManager;
 
 public:
   // CJNISurfaceHolderCallback interface

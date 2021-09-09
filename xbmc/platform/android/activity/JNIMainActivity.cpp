@@ -124,3 +124,28 @@ void CJNIMainActivity::unregisterMediaButtonEventReceiver()
   call_method<void>(m_context,
                     "unregisterMediaButtonEventReceiver", "()V");
 }
+
+bool CJNIMainActivity::checkIfHDMIPluggedJava()
+{
+  return call_method<jboolean>(m_context,
+    "checkIfHDMIPlugged", "()Z");
+}
+
+std::vector<int> CJNIMainActivity::getVideoFormatJava()
+{
+  return jcast<std::vector<int>>(
+    call_method<jhintArray>(m_context, "getVideoFormat", "()[I"));
+}
+
+int CJNIMainActivity::setTVSystemJava(int tvSystem)
+{
+  return call_method<jint>(m_context,
+    "setTVSystem", "(I)I", tvSystem);
+}
+
+int CJNIMainActivity::getTVSystemJava()
+{
+  return call_method<jint>(m_context,
+    "getTVSystem", "()I");
+}
+

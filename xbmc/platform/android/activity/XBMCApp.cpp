@@ -52,6 +52,7 @@
 #include <androidjni/WakeLock.h>
 #include <androidjni/Window.h>
 #include <androidjni/WindowManager.h>
+#include <androidjni/RtkHdmiManager.h>
 
 #include "AndroidKey.h"
 #include "settings/AdvancedSettings.h"
@@ -1685,3 +1686,66 @@ void CXBMCApp::surfaceDestroyed(CJNISurfaceHolder holder)
     m_window = NULL;
   }
 }
+
+CJNIRtkHdmiManager *CXBMCApp::mHdmiManager = NULL;
+void CXBMCApp::initHdmiManager()
+{
+ if (!mHdmiManager) {
+  if (CJNIBase::GetSDKVersion() <= 25) {
+    mHdmiManager = new CJNIRtkHdmiManager();
+  }
+ }
+}
+
+void CXBMCApp::deInitHdmiManager()
+{
+  if (mHdmiManager != NULL) {
+    delete mHdmiManager;
+    mHdmiManager = NULL;
+  }
+}
+
+bool CXBMCApp::checkIfHDMIPlugged()
+{
+  if (CJNIBase::GetSDKVersion() >= 28) {
+    return checkIfHDMIPluggedJava();
+  } else {
+    if (mHdmiManager != NULL) {
+      return mHdmiManager->checkIfHDMIPlugged();
+    }
+  }
+}
+
+std::vector<int> CXBMCApp::getVideoFormat()
+{
+  if (CJNIBase::GetSDKVersion() >= 28) {
+    return getVideoFormatJava();
+  } else {
+    if (mHdmiManager != NULL) {
+      return mHdmiManager->getVideoFormat();
+    }
+  }
+}
+
+int CXBMCApp::setTVSystem(int tvSystem)
+{
+  if (CJNIBase::GetSDKVersion() >= 28) {
+    return setTVSystemJava(tvSystem);
+  } else {
+    if (mHdmiManager != NULL) {
+      return mHdmiManager->setTVSystem(tvSystem);
+    }
+  }
+}
+
+int CXBMCApp::getTVSystem()
+{
+  if (CJNIBase::GetSDKVersion() >= 28) {
+    return getTVSystemJava();
+  } else {
+    if (mHdmiManager != NULL) {
+      return mHdmiManager->getTVSystem();
+    }
+  }
+}
+

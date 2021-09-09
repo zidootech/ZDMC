@@ -2,12 +2,14 @@ set(SOURCES OSScreenSaverAndroid.cpp
             WinEventsAndroid.cpp
             WinSystemAndroid.cpp
             AndroidUtils.cpp
+            AndroidUtilsRtk.cpp
             VideoSyncAndroid.cpp)
 
 set(HEADERS OSScreenSaverAndroid.h
             WinEventsAndroid.h
             WinSystemAndroid.h
             AndroidUtils.h
+            AndroidUtilsRtk.h
             VideoSyncAndroid.h)
 
 if(OPENGLES_FOUND)

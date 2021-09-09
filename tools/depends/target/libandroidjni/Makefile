@@ -19,6 +19,7 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	rm -rf $(PLATFORM)/*; mkdir -p $(PLATFORM)
 	cd $(PLATFORM); $(ARCHIVE_TOOL) $(ARCHIVE_TOOL_FLAGS) $(TARBALLS_LOCATION)/$(ARCHIVE)
 	cd $(PLATFORM); patch -p1 <../Add-more-Intent-apis-to-support-launching-external-p.patch
+	cd $(PLATFORM); patch -p1 <../Add-Realtek-HDMI-Manager-apis.patch
 	cd $(PLATFORM); rm -rf build; mkdir -p build
 	cd $(PLATFORM)/build; $(CMAKE) -DCMAKE_LIBRARY_PATH=$(TOOLCHAIN)/lib/$(HOST) ..
 

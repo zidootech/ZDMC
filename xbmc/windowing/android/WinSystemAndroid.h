@@ -8,7 +8,13 @@
 
 #pragma once
 
+#define UTILS_USE_RTK 1
+
+#if UTILS_USE_RTK
+#include "AndroidUtilsRtk.h"
+#else
 #include "AndroidUtils.h"
+#endif
 #include "rendering/gles/RenderSystemGLES.h"
 #include "system_egl.h"
 #include "threads/CriticalSection.h"
@@ -57,7 +63,11 @@ protected:
   std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> GetOSScreenSaverImpl() override;
   void OnTimeout() override;
 
+#if UTILS_USE_RTK
+  CAndroidUtilsRtk *m_android;
+#else
   CAndroidUtils *m_android;
+#endif
 
   EGLDisplay m_nativeDisplay;
   EGLNativeWindowType m_nativeWindow;

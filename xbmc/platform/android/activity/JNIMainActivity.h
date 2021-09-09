@@ -36,6 +36,11 @@ public:
 
   CJNIRect getDisplayRect();
 
+  static bool checkIfHDMIPluggedJava();
+  static std::vector<int> getVideoFormatJava();
+  static int setTVSystemJava(int tvSystem);
+  static int getTVSystemJava();
+
 private:
   static CJNIMainActivity *m_appInstance;
 

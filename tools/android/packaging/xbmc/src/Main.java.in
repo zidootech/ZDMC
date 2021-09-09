@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import com.zidoo.zdmc.channels.util.TvUtil;
 import android.net.Uri;
 
+import com.zidoo.share.ZidooShareListener;
+import com.zidoo.share.ZidooShareService;
+import com.zidoo.share.tool.ZidooResolutionTool;
+
 public class Main extends NativeActivity implements Choreographer.FrameCallback
 {
   private static final String TAG = "@APP_NAME@";
@@ -40,6 +44,8 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
   private View mDecorView = null;
   private RelativeLayout mVideoLayout = null;
   private Handler handler = new Handler();
+  private ZidooResolutionTool mZidooResolutionTool = null;
+  private ZidooShareService mZidooShareService = null;
 
   private class DelayedIntent
   {
@@ -122,6 +128,7 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
   public void onCreate(Bundle savedInstanceState)
   {
     checkPermission();
+    initShareService();
 
     System.loadLibrary("@APP_NAME_LC@");
 
@@ -359,5 +366,69 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
         e.printStackTrace();
       }
     }
+  }
+
+  private void initShareService() {
+    Log.d(TAG, "initShareService");
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+      Log.d(TAG, "register share service");
+      mZidooShareService = new ZidooShareService(this);
+      mZidooShareService.registerShareService(new ZidooShareListener() {
+
+        @Override
+        public void registerSuccess() {
+          Log.d(TAG, "register share service Success");
+          mZidooResolutionTool = mZidooShareService.getZidooResolutionTool();
+        }
+
+        @Override
+        public void registerFaile(int arg0) {
+          Log.d(TAG, "register share service fail");
+        }
+      });
+    }
+  }
+
+  private boolean checkIfHDMIPlugged() {
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+        if (mZidooResolutionTool != null) {
+          return mZidooResolutionTool.checkIfHDMIPlugged();
+        }
+    }
+    return false;
+  }
+
+  private int[] getVideoFormat() {
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+        if (mZidooResolutionTool != null) {
+          return mZidooResolutionTool.getHDMIResolutions();
+        }
+    }
+
+    Log.d(TAG, "can not connect share sevice, return default");
+    int[] defaultFormats = new int[31]; // Realtek max support resolution index is 30
+    for (int i = 0; i < defaultFormats.length; i++) {
+      defaultFormats[i] = 0;
+    }
+
+    return defaultFormats;
+  }
+
+  private int setTVSystem(int value) {
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+        if (mZidooResolutionTool != null) {
+          mZidooResolutionTool.setHDMIResolution(value);
+        }
+    }
+    return 0;
+  }
+
+  private int getTVSystem() {
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
+        if (mZidooResolutionTool != null) {
+          return mZidooResolutionTool.getHDMIResolution();
+        }
+    }
+    return -1;
   }
 }

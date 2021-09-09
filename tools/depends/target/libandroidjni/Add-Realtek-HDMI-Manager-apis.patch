@@ -1,0 +1,71 @@
+--- /dev/null
++++ b/src/RtkHdmiManager.cpp
+@@ -0,0 +1,44 @@
++#include "JNIBase.h"
++
++#include "RtkHdmiManager.h"
++
++#include "jutils-details.hpp"
++
++using namespace jni;
++
++//com.realtek.hardware
++CJNIRtkHdmiManager::CJNIRtkHdmiManager() : CJNIBase("com/realtek/hardware/RtkHDMIManager")
++{
++  m_object = new_object(GetClassName(), "<init>", "()V");
++  m_object.setGlobal();
++}
++
++bool CJNIRtkHdmiManager::checkIfHDMIPlugged()
++{
++  return call_method<jboolean>(m_object,
++    "checkIfHDMIPlugged", "()Z");
++}
++
++bool CJNIRtkHdmiManager::checkIfHDMIReady()
++{
++  return call_method<jboolean>(m_object,
++    "checkIfHDMIReady", "()Z");
++}
++
++std::vector<int> CJNIRtkHdmiManager::getVideoFormat() const
++{
++  return jcast<std::vector<int>>(
++    call_method<jhintArray>(m_object, "getVideoFormat", "()[I"));
++}
++
++int CJNIRtkHdmiManager::setTVSystem(int tvSystem)
++{
++  return call_method<jint>(m_object,
++    "setTVSystem", "(I)I", tvSystem);
++}
++
++int CJNIRtkHdmiManager::getTVSystem()
++{
++  return call_method<jint>(m_object,
++    "getTVSystem", "()I");
++}
+diff --git a/src/RtkHdmiManager.h b/src/RtkHdmiManager.h
+new file mode 100644
+index 0000000..5d55072
+--- /dev/null
++++ b/src/RtkHdmiManager.h
+@@ -0,0 +1,18 @@
++#pragma once
++
++
++#include "JNIBase.h"
++
++
++class CJNIRtkHdmiManager : public CJNIBase
++{
++public:
++  CJNIRtkHdmiManager();
++  ~CJNIRtkHdmiManager() {};
++
++  bool checkIfHDMIPlugged();
++  bool checkIfHDMIReady();
++  std::vector<int> getVideoFormat() const;
++  int setTVSystem(int tvSystem);
++  int getTVSystem();
++};

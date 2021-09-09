@@ -67,9 +67,11 @@ CWinSystemAndroid::~CWinSystemAndroid()
 bool CWinSystemAndroid::InitWindowSystem()
 {
   m_nativeDisplay = EGL_DEFAULT_DISPLAY;
-
+#if UTILS_USE_RTK
+  m_android = new CAndroidUtilsRtk();
+#else
   m_android = new CAndroidUtils();
-
+#endif
   m_decoderFilterManager = new(CMediaCodecDecoderFilterManager);
   CServiceBroker::RegisterDecoderFilterManager(m_decoderFilterManager);
 
