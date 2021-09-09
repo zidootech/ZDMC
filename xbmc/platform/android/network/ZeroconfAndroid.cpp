@@ -31,7 +31,15 @@ bool CZeroconfAndroid::doPublishService(const std::string& fcr_identifier, const
 
   newService.serviceInfo.setServiceName(fcr_name);
   newService.serviceInfo.setServiceType(fcr_type);
-  newService.serviceInfo.setHost(CJNIInetAddress::getLocalHost());
+  //newService.serviceInfo.setHost(CJNIInetAddress::getLocalHost());
+  CJNIInetAddress localHost = CJNIInetAddress::getLocalHost();
+  if (xbmc_jnienv()->ExceptionCheck()) {
+    CLog::Log(LOGERROR, "ZeroconfAndroid::doPublishService getLocalHost got exception");
+    xbmc_jnienv()->ExceptionClear();
+    localHost = CJNIInetAddress::getLoopbackAddress();
+  }
+  //CLog::Log(LOGDEBUG, "ZeroconfAndroid::doPublishService host %s", localHost.toString().c_str());
+  newService.serviceInfo.setHost(localHost);
   newService.serviceInfo.setPort(f_port);
 
   for (const auto& it : txt)
