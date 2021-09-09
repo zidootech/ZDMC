@@ -1,0 +1,27 @@
+--- a/config.h
++++ b/config.h
+@@ -133,19 +133,19 @@
+ #define HAVE_LIMITS_H 1
+ 
+ /* Define 1 if you have Linux-type CD-ROM support */
+-/* #undef HAVE_LINUX_CDROM */
++#define HAVE_LINUX_CDROM 1
+ 
+ /* Define to 1 if you have the <linux/cdrom.h> header file. */
+-/* #undef HAVE_LINUX_CDROM_H */
++#define HAVE_LINUX_CDROM_H 1
+ 
+ /* Define 1 if timeout is in cdrom_generic_command struct */
+-/* #undef HAVE_LINUX_CDROM_TIMEOUT */
++#define HAVE_LINUX_CDROM_TIMEOUT 1
+ 
+ /* Define to 1 if you have the <linux/major.h> header file. */
+-/* #undef HAVE_LINUX_MAJOR_H */
++#define HAVE_LINUX_MAJOR_H 1
+ 
+ /* Define to 1 if you have the <linux/version.h> header file. */
+-/* #undef HAVE_LINUX_VERSION_H */
++#define HAVE_LINUX_VERSION_H 1
+ 
+ /* Define to 1 if you have the `localtime_r' function. */
+ #define HAVE_LOCALTIME_R 1

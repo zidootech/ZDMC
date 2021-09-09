@@ -25,8 +25,10 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	cd $(PLATFORM); $(ARCHIVE_TOOL) $(ARCHIVE_TOOL_FLAGS) $(TARBALLS_LOCATION)/$(ARCHIVE)
 	cd $(PLATFORM); patch -p1 -i ../osx.patch
 	cd $(PLATFORM); patch -p1 -i ../01-fix-glob-on-android.patch
+	cd $(PLATFORM); patch -p1 -i ../Fix-device-node-of-cdroom-on-Android.patch
 	cd $(PLATFORM); $(AUTORECONF) -vif
 	cd $(PLATFORM); $(CONFIGURE)
+	cd $(PLATFORM); patch -p1 -i ../Fix-cdroom-header-on-Android.patch
 
 $(LIBDYLIB): $(PLATFORM)
 	$(MAKE) -C $(PLATFORM)/lib

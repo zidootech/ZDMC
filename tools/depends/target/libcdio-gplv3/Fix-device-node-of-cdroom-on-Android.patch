@@ -1,0 +1,9 @@
+--- a/lib/driver/gnu_linux.c
++++ b/lib/driver/gnu_linux.c
+@@ -1371,6 +1371,7 @@ checklist2[] =
+     { "/dev/hd%c",  'a', 'z' },
+     { "/dev/scd%d", 0,   27 },
+     { "/dev/sr%d",  0,   27 },
++    { "/dev/block/sr%d",  0,   2 }
+   };
+ static const int checklist2_size = sizeof(checklist2) / sizeof(checklist2[0]);
