@@ -1,0 +1,64 @@
+From 40b110d197b19a5a3f18f3c5b68faf4fbaac652e Mon Sep 17 00:00:00 2001
+From: Daolong Li <dl@zidoo.tv>
+Date: Thu, 9 Sep 2021 12:02:52 +0800
+Subject: [PATCH] Add more Intent apis to support launching external player
+
+---
+ src/Intent.cpp | 13 +++++++++++++
+ src/Intent.h   |  2 ++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/src/Intent.cpp b/src/Intent.cpp
+index beefbae..7ac0907 100644
+--- a/src/Intent.cpp
++++ b/src/Intent.cpp
+@@ -134,6 +134,13 @@ CJNIIntent CJNIIntent::putExtra(const std::string &name, const std::string &valu
+     jcast<jhstring>(name), jcast<jhstring>(value));
+ }
+ 
++CJNIIntent CJNIIntent::putExtra(const std::string &name, bool value)
++{
++  return (CJNIIntent)call_method<jhobject>(m_object,
++    "putExtra", "(Ljava/lang/String;Z)Landroid/content/Intent;",
++    jcast<jhstring>(name), value);
++}
++
+ void CJNIIntent::addFlags(int flags)
+ {
+   call_method<jhobject>(m_object,
+@@ -169,6 +176,12 @@ void CJNIIntent::setData(const std::string &uri)
+     jcast<jhstring>(uri));
+ }
+ 
++void CJNIIntent::setData(const CJNIURI &uri)
++{
++  call_method<jhobject>(m_object,
++    "setData", "(Landroid/net/Uri;)Landroid/content/Intent;", uri.get_raw());
++}
++
+ void CJNIIntent::setDataAndType(const CJNIURI &uri, const std::string &type)
+ {
+   call_method<jhobject>(m_object,
+diff --git a/src/Intent.h b/src/Intent.h
+index 91d4322..57afe8b 100644
+--- a/src/Intent.h
++++ b/src/Intent.h
+@@ -47,6 +47,7 @@ public:
+   bool hasCategory(const std::string &category) const;
+ 
+   CJNIIntent putExtra(const std::string &name, const std::string &value);
++  CJNIIntent putExtra(const std::string &name, bool value);
+ 
+   void addFlags(int flags);
+   void addCategory(const std::string &category);
+@@ -57,6 +58,7 @@ public:
+   // Note that these are strings. We auto-convert to uri objects.
+   void setDataAndType(const CJNIURI &uri, const std::string &type);
+   void setData(const std::string &uri);
++  void setData(const CJNIURI &uri);
+ 
+   void setPackage(const std::string &packageName);
+   void setType(const std::string &type);
+-- 
+1.9.1
+

@@ -136,6 +136,7 @@ constexpr const char* CSettings::SETTING_VIDEOPLAYER_TELETEXTENABLED;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_TELETEXTSCALE;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_STEREOSCOPICPLAYBACKMODE;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_QUITSTEREOMODEONSTOP;
+constexpr const char* CSettings::SETTING_VIDEOPLAYER_ENABLEEXTERNALPLAYER;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_RENDERMETHOD;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_HQSCALERS;
 constexpr const char* CSettings::SETTING_VIDEOPLAYER_USEMEDIACODEC;

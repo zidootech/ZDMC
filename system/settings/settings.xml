@@ -3,6 +3,11 @@
   <section id="player" label="14200" help="38100">
     <category id="videoplayer" label="14215" help="38103">
       <group id="1" label="14230">
+        <setting id="videoplayer.enableexternalplayer" type="boolean" label="39200" help="39201">
+          <level>1</level>
+          <default>true</default>
+          <control type="toggle" />
+        </setting>
         <setting id="videoplayer.autoplaynextitem" type="list[integer]" label="13433" help="36152">
           <constraints>
             <options>

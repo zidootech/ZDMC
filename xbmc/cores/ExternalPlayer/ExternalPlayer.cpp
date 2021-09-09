@@ -468,7 +468,16 @@ bool CExternalPlayer::ExecuteAppAndroid(const char* strSwitches,const char* strP
 {
   CLog::Log(LOGINFO, "%s: %s", __FUNCTION__, strSwitches);
 
-  bool ret = CXBMCApp::StartActivity(strSwitches, "android.intent.action.VIEW", "video/*", strPath);
+  bool ret = false;
+  if ((strSwitches != NULL) &&
+    (strcmp(strSwitches, "com.android.gallery3d") == 0))
+  {
+    ret = CXBMCApp::StartVideoPlayerActivity(strSwitches, "android.intent.action.VIEW", "video/*", strPath);
+  }
+  else
+  {
+    ret = CXBMCApp::StartActivity(strSwitches, "android.intent.action.VIEW", "video/*", strPath);
+  }
 
   if (!ret)
   {

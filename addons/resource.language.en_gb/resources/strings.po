@@ -22486,3 +22486,13 @@ msgstr ""
 msgctxt "#39153"
 msgid "Windowing system:"
 msgstr ""
+
+#: system/settings/settings.xml
+msgctxt "#39200"
+msgid "Play video with external player"
+msgstr ""
+
+#: system/settings/settings.xml
+msgctxt "#39201"
+msgid "[Enabled] Kodi will launch exteranl player (zidoo media player) when playing a video file.[CR][Disabled] Normal mode, Kodi will play a video itself"
+msgstr ""

@@ -8,9 +8,17 @@
     <player name="VideoPlayer" /> placeholder for MPlayer
     <player name="PAPlayer" audio="true" />
     -->
+    <player name="ZidooPlayer" type="ExternalPlayer" audio="false" video="true">
+      <filename>com.android.gallery3d</filename>
+      <hidexbmc>true</hidexbmc>
+      <playcountminimumtime>120</playcountminimumtime>
+    </player>
   </players>
 
   <rules name="system rules">
+    <!-- Zidoo native player rule-->
+    <rule name="local" filetypes="mkv|m4v|mov|mpg|flv|pmp|vob|dat|asf|psr|3gp|mpeg|ram|m4p|m4b|mp4|f4v|3gpp|3g2|3gpp2|webm|ts|tp|m2ts|m2t|lge|3dv|3dm|iso|mpls|ssif|bdmv" player="ZidooPlayer" />
+
     <rule name="mms/udp" protocols="mms|mmsh|udp" player="VideoPlayer" />
     <rule name="lastfm/shout" protocols="lastfm|shout" player="PAPlayer" />
     <rule name="rtmp" protocols="rtmp" player="videodefaultplayer" />

@@ -127,6 +127,7 @@ namespace XFILE
     bool OpenForWrite(const CURL& url, bool bOverWrite = false) override;
     bool Delete(const CURL& url) override;
     bool Rename(const CURL& url, const CURL& urlnew) override;
+    std::string GetExportPath() {return m_exportPath;}
   protected:
     CURL m_url;
     bool IsValidFile(const std::string& strFileName);
