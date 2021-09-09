@@ -1,6 +1,8 @@
 package com.zidoo.zdmc;
 
 import android.content.Context;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.os.Build.VERSION_CODES;
 import android.os.Build;
 import android.app.NativeActivity;
@@ -23,6 +25,7 @@ import android.widget.RelativeLayout;
 import java.util.ArrayList;
 
 import com.zidoo.zdmc.channels.util.TvUtil;
+import android.net.Uri;
 
 public class Main extends NativeActivity implements Choreographer.FrameCallback
 {
@@ -118,6 +121,8 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
   @Override
   public void onCreate(Bundle savedInstanceState)
   {
+    checkPermission();
+
     System.loadLibrary("@APP_NAME_LC@");
 
     super.onCreate(savedInstanceState);
@@ -324,5 +329,35 @@ public class Main extends NativeActivity implements Choreographer.FrameCallback
         _callNative(funcAddr, variantAddr);
       }
     });
+  }
+
+  private static boolean isCheckValue(Context mContext, String key) {
+    boolean isResult = false;
+    try {
+      ContentResolver contentResolver = mContext.getContentResolver();
+      Uri mUri = ContentUris.withAppendedId(Uri.parse("content://com.zidoo.busybox.check.provide/"), 1);
+      if (mUri != null) {
+        isResult = contentResolver.delete(mUri, key, null) == 1;
+        return isResult;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return isResult;
+  }
+
+  private void checkPermission() {
+    Context c = Main.this.getApplicationContext();
+    boolean rtk = isCheckValue(c, "isRealtekModel");
+    if (!rtk) {
+      Log.d(TAG, "Lai jiang bei zhan yu ma xia!");
+      try {
+        // kill ourself
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(0);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
   }
 }
