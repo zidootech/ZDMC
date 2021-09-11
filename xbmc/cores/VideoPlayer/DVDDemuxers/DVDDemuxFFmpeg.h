@@ -150,6 +150,7 @@ protected:
   bool     m_bMatroska;
   bool     m_bAVI;
   bool     m_bSup;
+  bool     m_bMp4;
   int      m_speed;
   unsigned int m_program;
   unsigned int m_streamsInProgram;

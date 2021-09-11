@@ -55,7 +55,7 @@
 #include <androidjni/UUID.h>
 
 #include "system.h"
-
+#include "windowing/WinSystem.h"
 
 static const char* XMEDIAFORMAT_KEY_ROTATION = "rotation-degrees";
 static const char* XMEDIAFORMAT_KEY_SLICE = "slice-height";
@@ -213,7 +213,7 @@ void CMediaCodecVideoBuffer::UpdateTexImage()
   // we hook the SurfaceTexture OnFrameAvailable callback
   // using CJNISurfaceTextureOnFrameAvailableListener and wait
   // on a CEvent to fire. 50ms seems to be a good max fallback.
-  WaitForFrame(50);
+  WaitForFrame(250);
 
   m_surfacetexture->updateTexImage();
   if (xbmc_jnienv()->ExceptionCheck())
@@ -500,18 +500,30 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
         goto FAIL;
       }
 
-      if (m_hints.codec_tag == MKTAG('d', 'v', 'h', 'e'))
-      {
-        m_mime = "video/dolby-vision";
-        m_formatname = "amc-dvhe";
-      }
-      else if (m_hints.codec_tag == MKTAG('d', 'v', 'h', '1'))
-      {
-        m_mime = "video/dolby-vision";
-        m_formatname = "amc-dvh1";
-      }
-      else
-      {
+      if (CServiceBroker::GetWinSystem()->IsDoviDisplay()) {
+          CLog::Log(LOGINFO, "CDVDVideoCodecAndroidMediaCodec:: hevc dv detail %s", av_fourcc2str(m_hints.codec_tag));
+          if (m_hints.codec_tag == MKTAG('d', 'v', 'h', 'e'))
+          {
+            m_mime = "video/dolby-vision";
+            m_formatname = "amc-dvhe";
+          }
+          else if (m_hints.codec_tag == MKTAG('d', 'v', 'h', '1'))
+          {
+            m_mime = "video/dolby-vision";
+            m_formatname = "amc-dvh1";
+          }
+          else if (m_hints.codec_tag == MKTAG('d', 'v', 'v', 'C')/* || m_hints.codec_tag == MKTAG('d', 'v', 'c', 'C')*/)
+          {
+            m_mime = "video/dolby-vision";
+            m_formatname = "amc-dvh1";
+          }
+          else
+          {
+            m_mime = "video/hevc";
+            m_formatname = "amc-hevc";
+          }
+      } else {
+        CLog::Log(LOGINFO, "CDVDVideoCodecAndroidMediaCodec:: hevc detail %s", av_fourcc2str(m_hints.codec_tag));
         m_mime = "video/hevc";
         m_formatname = "amc-hevc";
       }
@@ -754,7 +766,14 @@ bool CDVDVideoCodecAndroidMediaCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptio
     m_invalidPTSValue = AV_NOPTS_VALUE;
   else if (m_codecname.find("OMX.MTK", 0, 7) == 0)
     m_invalidPTSValue = -1; //Use DTS
-  else
+  else if (m_codecname.find("OMX.dolby.vision", 0, 16) == 0) {
+    m_invalidPTSValue = -1; //Use DTS
+    if (m_bitstream && m_mime == "video/dolby-vision")
+    {
+      CLog::Log(LOGDEBUG, "Dolby Vision realtek decoder, using NAL header size 4 workaround");
+      m_bitstream->SetDoviWorkaround();
+    }
+  } else
     m_invalidPTSValue = 0;
 
   CLog::Log(LOGINFO, "CDVDVideoCodecAndroidMediaCodec:: "
@@ -1115,7 +1134,7 @@ CDVDVideoCodec::VCReturn CDVDVideoCodecAndroidMediaCodec::GetPicture(VideoPictur
     // try to fetch an input buffer
     if (m_indexInputBuffer < 0)
     {
-      m_indexInputBuffer = m_codec->dequeueInputBuffer(5000 /*timout*/);
+      m_indexInputBuffer = m_codec->dequeueInputBuffer(10000 /*timout*/);
       if (xbmc_jnienv()->ExceptionCheck())
       {
         xbmc_jnienv()->ExceptionClear();
@@ -1400,6 +1419,13 @@ int CDVDVideoCodecAndroidMediaCodec::GetOutputPicture(void)
     xbmc_jnienv()->ExceptionClear();
     CLog::Log(LOGERROR,
               "CDVDVideoCodecAndroidMediaCodec:GetOutputPicture dequeueOutputBuffer failed");
+
+    if (m_mime == "video/dolby-vision")
+    {
+      CApplicationMessenger::GetInstance().PostMsg(TMSG_MEDIA_STOP);
+      m_state = MEDIACODEC_STATE_STOPPED;
+    }
+
     return -2;
   }
 

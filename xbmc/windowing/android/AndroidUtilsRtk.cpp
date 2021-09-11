@@ -794,11 +794,35 @@ bool CAndroidUtilsRtk::IsHDRDisplay()
     if (view)
     {
       CJNIDisplay display = view.getDisplay();
-      if (display)
-        ret = display.isHdr();
+      if (display) {
+        if (CJNIBase::GetSDKVersion() == 28) {
+            ret = display.supportHdr();
+        } else {
+            ret = display.isHdr();
+        }
+      }
     }
   }
   CLog::Log(LOGDEBUG, "CAndroidUtilsRtk: IsHDRDisplay: %s", ret ? "true" : "false");
+  return ret;
+}
+
+bool CAndroidUtilsRtk::IsDoviDisplay()
+{
+  CJNIWindow window = CXBMCApp::getWindow();
+  bool ret = false;
+
+  if (window)
+  {
+    CJNIView view = window.getDecorView();
+    if (view)
+    {
+      CJNIDisplay display = view.getDisplay();
+      if (display)
+        ret = display.supportDovi();
+    }
+  }
+  CLog::Log(LOGDEBUG, "CAndroidUtilsRtk: IsDoviDisplay: %s", ret ? "true" : "false");
   return ret;
 }
 

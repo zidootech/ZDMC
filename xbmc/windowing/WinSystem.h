@@ -163,6 +163,7 @@ public:
   std::shared_ptr<CDPMSSupport> GetDPMSManager();
   virtual bool SetHDR(const VideoPicture* videoPicture) { return false; };
   virtual bool IsHDRDisplay() { return false; };
+  virtual bool IsDoviDisplay() { return false; };
   virtual HDR_STATUS ToggleHDR() { return HDR_STATUS::HDR_UNSUPPORTED; };
   virtual HDR_STATUS GetOSHDRStatus() { return HDR_STATUS::HDR_UNSUPPORTED; };
 

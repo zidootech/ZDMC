@@ -1,0 +1,49 @@
+--- a/src/Display.cpp
++++ b/src/Display.cpp
+@@ -154,3 +154,32 @@ int CJNIDisplay::getState()
+     "getState", "()I");
+ }
+ 
++bool CJNIDisplay::supportHdr()
++{
++    CJNIDisplayHdrCapabilities caps = getHdrCapabilities();
++    if (caps) {
++        std::vector<int> types = caps.getSupportedHdrTypes();
++        for (size_t i = 0; i < types .size(); i++) {
++            if (types[i] != 0) {
++                return true;
++            }
++        }
++    }
++
++    return false;
++}
++
++bool CJNIDisplay::supportDovi()
++{
++    CJNIDisplayHdrCapabilities caps = getHdrCapabilities();
++    if (caps) {
++        std::vector<int> types = caps.getSupportedHdrTypes();
++        for (size_t i = 0; i < types.size(); i++) {
++            if (types[i]  == 1 /*HDR_TYPE_DOLBY_VISION*/) {
++                return true;
++            }
++        }
++    }
++
++    return false;
++}
+diff --git a/src/Display.h b/src/Display.h
+index e6de3ea..8e13264 100644
+--- a/src/Display.h
++++ b/src/Display.h
+@@ -69,6 +69,8 @@ public:
+   CJNIDisplayHdrCapabilities getHdrCapabilities();
+   int getState();
+   bool isHdr();
++  bool supportHdr();
++  bool supportDovi();
+ };
+ 
+ typedef std::vector<CJNIDisplayMode> CJNIDisplayModes;
+

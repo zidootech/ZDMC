@@ -1,0 +1,325 @@
+--- a/libavformat/isom.c
++++ b/libavformat/isom.c
+@@ -665,6 +665,97 @@ void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout)
+     avio_wb32(pb, 0);              // mNumberChannelDescriptions
+ }
+ 
++int ff_mov_parse_dvcc_dvvc(AVStream *st, GetBitContext *gb, void *log_ctx)
++{
++    AVDOVIDecoderConfigurationRecord *dovi;
++    size_t dovi_size;
++    int ret;
++
++    if (gb->size_in_bits < 32)
++        return AVERROR_INVALIDDATA;
++
++    dovi = av_dovi_alloc(&dovi_size);
++    if (!dovi)
++        return AVERROR(ENOMEM);
++
++    dovi->dv_version_major = get_bits(gb, 8);
++    dovi->dv_version_minor = get_bits(gb, 8);
++
++    dovi->dv_profile        = get_bits(gb, 7);
++    dovi->dv_level          = get_bits(gb, 6);
++    dovi->rpu_present_flag  = get_bits1(gb);
++    dovi->el_present_flag   = get_bits1(gb);
++    dovi->bl_present_flag   = get_bits1(gb);
++    if (gb->size_in_bits >= 24 * 8) {
++        dovi->dv_bl_signal_compatibility_id = get_bits(gb, 4);
++    } else {
++        // 0 stands for None
++        // Dolby Vision V1.2.93 profiles and levels
++        dovi->dv_bl_signal_compatibility_id = 0;
++    }
++
++    ret = av_stream_add_side_data(st, AV_PKT_DATA_DOVI_CONF,
++                                  (uint8_t *)dovi, dovi_size);
++    if (ret < 0) {
++        av_free(dovi);
++        return ret;
++    }
++
++    av_log(log_ctx, AV_LOG_TRACE, "DOVI in dvcC/dvvC box, version: %d.%d, profile: %d, level: %d, "
++           "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
++           dovi->dv_version_major, dovi->dv_version_minor,
++           dovi->dv_profile, dovi->dv_level,
++           dovi->rpu_present_flag,
++           dovi->el_present_flag,
++           dovi->bl_present_flag,
++           dovi->dv_bl_signal_compatibility_id
++        );
++
++    return 0;
++}
++
++int ff_mov_put_dvcc_dvvc(uint8_t *out, int size, uint32_t *type,
++                         AVDOVIDecoderConfigurationRecord *dovi, void *log_ctx)
++{
++    PutBitContext pb;
++    init_put_bits(&pb, out, size);
++
++    if (size < MOV_DVCC_DVVC_SIZE)
++        return AVERROR(EINVAL);
++
++    if (dovi->dv_profile > 7)
++        *type = MKBETAG('d', 'v', 'v', 'C');
++    else
++        *type = MKBETAG('d', 'v', 'c', 'C');
++
++    put_bits(&pb, 8, dovi->dv_version_major);
++    put_bits(&pb, 8, dovi->dv_version_minor);
++    put_bits(&pb, 7, dovi->dv_profile);
++    put_bits(&pb, 6, dovi->dv_level);
++    put_bits(&pb, 1, dovi->rpu_present_flag);
++    put_bits(&pb, 1, dovi->el_present_flag);
++    put_bits(&pb, 1, dovi->bl_present_flag);
++    put_bits(&pb, 4, dovi->dv_bl_signal_compatibility_id);
++    put_bits(&pb, 28, 0); /* reserved */
++    put_bits32(&pb, 0); /* reserved */
++    put_bits32(&pb, 0); /* reserved */
++    put_bits32(&pb, 0); /* reserved */
++    put_bits32(&pb, 0); /* reserved */
++    flush_put_bits(&pb);
++
++    av_log(log_ctx, AV_LOG_DEBUG, "DOVI in %s box, version: %d.%d, profile: %d, level: %d, "
++           "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
++           dovi->dv_profile > 7 ? "dvvC" : "dvcC",
++           dovi->dv_version_major, dovi->dv_version_minor,
++           dovi->dv_profile, dovi->dv_level,
++           dovi->rpu_present_flag,
++           dovi->el_present_flag,
++           dovi->bl_present_flag,
++           dovi->dv_bl_signal_compatibility_id);
++
++    return put_bits_count(&pb) / 8;
++}
++
+ const struct AVCodecTag *avformat_get_mov_video_tags(void)
+ {
+     return ff_codec_movvideo_tags;
+diff --git a/libavformat/isom.h b/libavformat/isom.h
+index 41a9c64..816bf14 100644
+--- a/libavformat/isom.h
++++ b/libavformat/isom.h
+@@ -27,6 +27,11 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++#include "libavcodec/get_bits.h"
++#include "libavcodec/put_bits.h"
++
++#include "libavutil/dovi_meta.h"
++
+ #include "libavutil/encryption_info.h"
+ #include "libavutil/mastering_display_metadata.h"
+ #include "libavutil/spherical.h"
+@@ -362,6 +367,12 @@ int ff_mov_read_esds(AVFormatContext *fc, AVIOContext *pb);
+ int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries);
+ void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout);
+ 
++#define MOV_DVCC_DVVC_SIZE 24
++int ff_mov_parse_dvcc_dvvc(AVStream *st, GetBitContext *gb, void *log_ctx);
++int ff_mov_put_dvcc_dvvc(uint8_t *out, int size, uint32_t *type,
++                         AVDOVIDecoderConfigurationRecord *dovi, void *log_ctx);
++
++
+ #define FF_MOV_FLAG_MFRA_AUTO -1
+ #define FF_MOV_FLAG_MFRA_DTS 1
+ #define FF_MOV_FLAG_MFRA_PTS 2
+diff --git a/libavformat/matroska.h b/libavformat/matroska.h
+index 6f198f0..539ccb8 100644
+--- a/libavformat/matroska.h
++++ b/libavformat/matroska.h
+@@ -106,6 +106,7 @@
+ #define MATROSKA_ID_TRACKCONTENTENCODING 0x6240
+ #define MATROSKA_ID_TRACKTIMECODESCALE 0x23314F
+ #define MATROSKA_ID_TRACKMAXBLKADDID 0x55EE
++#define MATROSKA_ID_TRACKBLKADDMAPPING 0x41E4
+ 
+ /* IDs in the trackvideo master */
+ #define MATROSKA_ID_VIDEOFRAMERATE 0x2383E3
+@@ -186,6 +187,10 @@
+ 
+ /* ID in the cues master */
+ #define MATROSKA_ID_POINTENTRY 0xBB
++#define MATROSKA_ID_BLKADDIDVALUE 0x41F0
++#define MATROSKA_ID_BLKADDIDNAME 0x41A4
++#define MATROSKA_ID_BLKADDIDTYPE 0x41E7
++#define MATROSKA_ID_BLKADDIDEXTRADATA 0x41ED
+ 
+ /* IDs in the pointentry master */
+ #define MATROSKA_ID_CUETIME    0xB3
+diff --git a/libavformat/matroskadec.c b/libavformat/matroskadec.c
+index 22d1ca5..d30de73 100644
+--- a/libavformat/matroskadec.c
++++ b/libavformat/matroskadec.c
+@@ -226,6 +226,13 @@ typedef struct MatroskaTrackOperation {
+     EbmlList combine_planes;
+ } MatroskaTrackOperation;
+ 
++typedef struct MatroskaBlockAdditionMapping {
++    int value;
++    char *name;
++    int type;
++    EbmlBin extradata;
++} MatroskaBlockAdditionMapping;
++
+ typedef struct MatroskaTrack {
+     uint64_t num;
+     uint64_t uid;
+@@ -252,6 +259,7 @@ typedef struct MatroskaTrack {
+     int needs_decoding;
+     uint64_t max_block_additional_id;
+ 
++    EbmlList block_addition_mappings;
+     uint32_t palette[AVPALETTE_COUNT];
+     int has_palette;
+ } MatroskaTrack;
+@@ -397,8 +405,8 @@ typedef struct MatroskaDemuxContext {
+ // incomplete type (6.7.2 in C90, 6.9.2 in C99).
+ // Removing the sizes breaks MSVC.
+ static EbmlSyntax ebml_syntax[3], matroska_segment[9], matroska_track_video_color[15], matroska_track_video[19],
+-                  matroska_track[27], matroska_track_encoding[6], matroska_track_encodings[2],
+-                  matroska_track_combine_planes[2], matroska_track_operation[2], matroska_tracks[2],
++                  matroska_track[28], matroska_track_encoding[6], matroska_track_encodings[2],
++                  matroska_track_combine_planes[2], matroska_track_operation[2], matroska_block_addition_mapping[5], matroska_tracks[2],
+                   matroska_attachments[2], matroska_chapter_entry[9], matroska_chapter[6], matroska_chapters[2],
+                   matroska_index_entry[3], matroska_index[2], matroska_tag[3], matroska_tags[2], matroska_seekhead[2],
+                   matroska_blockadditions[2], matroska_blockgroup[8], matroska_cluster_parsing[8];
+@@ -548,6 +556,14 @@ static EbmlSyntax matroska_track_operation[] = {
+     CHILD_OF(matroska_track)
+ };
+ 
++static EbmlSyntax matroska_block_addition_mapping[] = {
++    { MATROSKA_ID_BLKADDIDVALUE,      EBML_UINT, 0, offsetof(MatroskaBlockAdditionMapping, value) },
++    { MATROSKA_ID_BLKADDIDNAME,       EBML_STR,  0, offsetof(MatroskaBlockAdditionMapping, name) },
++    { MATROSKA_ID_BLKADDIDTYPE,       EBML_UINT, 0, offsetof(MatroskaBlockAdditionMapping, type) },
++    { MATROSKA_ID_BLKADDIDEXTRADATA,  EBML_BIN,  0, offsetof(MatroskaBlockAdditionMapping, extradata) },
++    CHILD_OF(matroska_track)
++};
++
+ static EbmlSyntax matroska_track[] = {
+     { MATROSKA_ID_TRACKNUMBER,           EBML_UINT,  0, offsetof(MatroskaTrack, num) },
+     { MATROSKA_ID_TRACKNAME,             EBML_UTF8,  0, offsetof(MatroskaTrack, name) },
+@@ -566,6 +582,7 @@ static EbmlSyntax matroska_track[] = {
+     { MATROSKA_ID_TRACKOPERATION,        EBML_NEST,  0, offsetof(MatroskaTrack, operation),    { .n = matroska_track_operation } },
+     { MATROSKA_ID_TRACKCONTENTENCODINGS, EBML_NEST,  0, 0,                                     { .n = matroska_track_encodings } },
+     { MATROSKA_ID_TRACKMAXBLKADDID,      EBML_UINT,  0, offsetof(MatroskaTrack, max_block_additional_id) },
++    { MATROSKA_ID_TRACKBLKADDMAPPING,    EBML_NEST,  sizeof(MatroskaBlockAdditionMapping), offsetof(MatroskaTrack, block_addition_mappings), { .n = matroska_block_addition_mapping } },
+     { MATROSKA_ID_SEEKPREROLL,           EBML_UINT,  0, offsetof(MatroskaTrack, seek_preroll) },
+     { MATROSKA_ID_TRACKFLAGENABLED,      EBML_NONE },
+     { MATROSKA_ID_TRACKFLAGLACING,       EBML_NONE },
+@@ -2259,6 +2276,39 @@ static int mkv_parse_video_projection(AVStream *st, const MatroskaTrack *track,
+     return 0;
+ }
+ 
++static int mkv_parse_dvcc_dvvc(AVStream *st, const MatroskaTrack *track,
++                               EbmlBin *bin, void *logctx)
++{
++    GetBitContext gb;
++    init_get_bits8(&gb, bin->data, bin->size);
++    return ff_mov_parse_dvcc_dvvc(st, &gb, logctx);
++}
++
++static int mkv_parse_block_addition_mappings(AVStream *st, const MatroskaTrack *track,
++                                             void *logctx)
++{
++    int i, ret;
++    const EbmlList *mappings_list = &track->block_addition_mappings;
++    MatroskaBlockAdditionMapping *mappings = mappings_list->elem;
++
++    for (i = 0; i < mappings_list->nb_elem; i++) {
++        MatroskaBlockAdditionMapping *mapping = &mappings[i];
++        switch (mapping->type) {
++        case MKBETAG('d','v','c','C'):
++        case MKBETAG('d','v','v','C'):
++            if ((ret = mkv_parse_dvcc_dvvc(st, track, &mapping->extradata, logctx)) < 0)
++                return ret;
++            break;
++        default:
++            av_log(logctx, AV_LOG_DEBUG,
++                   "Unknown block additional mapping type %i, value %i, name \"%s\"\n",
++                   mapping->type, mapping->value, mapping->name ? mapping->name : "");
++        }
++    }
++
++    return 0;
++}
++
+ static int get_qt_codec(MatroskaTrack *track, uint32_t *fourcc, enum AVCodecID *codec_id)
+ {
+     const AVCodecTag *codec_tags;
+@@ -2447,6 +2497,12 @@ static int matroska_parse_tracks(AVFormatContext *s)
+                         AV_DICT_DONT_STRDUP_VAL);
+         }
+ 
++        if (encodings_list->nb_elem == 1) {
++            av_dict_set_int(&st->metadata, "encoding_type", encodings[0].type, 0);
++            if (encodings[0].type == 0)
++              av_dict_set_int(&st->metadata, "compression_algo", encodings[0].compression.algo, 0);
++        }
++
+         if (!strcmp(track->codec_id, "V_MS/VFW/FOURCC") &&
+              track->codec_priv.size >= 40               &&
+             track->codec_priv.data) {
+@@ -2831,6 +2887,10 @@ static int matroska_parse_tracks(AVFormatContext *s)
+         } else if (track->type == MATROSKA_TRACK_TYPE_SUBTITLE) {
+             st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
+         }
++
++        ret = mkv_parse_block_addition_mappings(st, track, matroska->ctx);
++        if (ret < 0)
++            return ret;
+     }
+ 
+     return 0;
+diff --git a/libavformat/matroskaenc.c b/libavformat/matroskaenc.c
+index eaed02b..8234b12 100644
+--- a/libavformat/matroskaenc.c
++++ b/libavformat/matroskaenc.c
+@@ -1110,6 +1110,33 @@ static int mkv_write_stereo_mode(AVFormatContext *s, AVIOContext *pb,
+     return 0;
+ }
+ 
++static int mkv_write_dovi(AVFormatContext *s, AVIOContext *pb, AVStream *st)
++{
++    int ret;
++    AVDOVIDecoderConfigurationRecord *dovi = (AVDOVIDecoderConfigurationRecord *)
++                                             av_stream_get_side_data(st, AV_PKT_DATA_DOVI_CONF, NULL);
++
++    if (dovi) {
++        ebml_master mapping;
++        uint8_t buf[MOV_DVCC_DVVC_SIZE];
++        uint32_t type;
++        int size;
++
++        if ((ret = ff_mov_put_dvcc_dvvc(buf, sizeof(buf), &type, dovi, s)) < 0)
++            return ret;
++
++        size = ret;
++
++        mapping = start_ebml_master(pb, MATROSKA_ID_TRACKBLKADDMAPPING, 0);
++        put_ebml_uint(pb, MATROSKA_ID_BLKADDIDVALUE, 0);
++        put_ebml_uint(pb, MATROSKA_ID_BLKADDIDTYPE, type);
++        put_ebml_binary(pb, MATROSKA_ID_BLKADDIDEXTRADATA, buf, size);
++        end_ebml_master(pb, mapping);
++    }
++
++    return 0;
++}
++
+ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
+                            AVStream *st, mkv_track *track, AVIOContext *pb,
+                            int is_default)
+@@ -1297,6 +1324,9 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
+         mkv_write_video_projection(s, pb, st);
+ 
+         end_ebml_master(pb, subinfo);
++
++        if ((ret = mkv_write_dovi(s, pb, st)) < 0)
++            return ret;
+         break;
+ 
+     case AVMEDIA_TYPE_AUDIO:
+

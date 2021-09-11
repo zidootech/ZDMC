@@ -81,6 +81,7 @@ $(PLATFORM): $(TARBALLS_LOCATION)/$(ARCHIVE) $(DEPS)
 	cd $(PLATFORM);\
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	./configure $(ffmpg_config)
+	cd $(PLATFORM); patch -p1 <../Add-DV-support.patch
 
 .build-$(PLATFORM): $(PLATFORM)
 	$(MAKE) -C $(PLATFORM)

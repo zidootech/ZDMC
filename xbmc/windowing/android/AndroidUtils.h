@@ -26,6 +26,7 @@ public:
   bool ProbeResolutions(std::vector<RESOLUTION_INFO>& resolutions);
   bool UpdateDisplayModes();
   bool IsHDRDisplay();
+  bool IsDoviDisplay() { return false; }
 
   // Implementation of ISettingCallback
   static const std::string SETTING_LIMITGUI;

@@ -29,6 +29,7 @@
 #include "utils/URIUtils.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
+#include "windowing/WinSystem.h"
 
 #include <sstream>
 #include <utility>
@@ -47,6 +48,7 @@
 #endif
 
 extern "C" {
+#include "libavutil/dovi_meta.h"
 #include <libavutil/dict.h>
 #include <libavutil/opt.h>
 }
@@ -198,6 +200,7 @@ CDVDDemuxFFmpeg::CDVDDemuxFFmpeg() : CDVDDemux()
   m_bMatroska = false;
   m_bAVI = false;
   m_bSup = false;
+  m_bMp4 = false;
   m_speed = DVD_PLAYSPEED_NORMAL;
   m_program = UINT_MAX;
   m_pkt.result = -1;
@@ -533,6 +536,7 @@ bool CDVDDemuxFFmpeg::Open(const std::shared_ptr<CDVDInputStream>& pInput, bool 
   m_bMatroska = strncmp(m_pFormatContext->iformat->name, "matroska", 8) == 0;	// for "matroska.webm"
   m_bAVI = strcmp(m_pFormatContext->iformat->name, "avi") == 0;
   m_bSup = strcmp(m_pFormatContext->iformat->name, "sup") == 0;
+  m_bMp4= strncmp(m_pFormatContext->iformat->name, "mov,mp4", 7) == 0;
 
   if (m_streaminfo)
   {
@@ -1653,6 +1657,39 @@ CDemuxStream* CDVDDemuxFFmpeg::AddStream(int streamIdx)
         if (!stereoMode.empty())
           st->stereo_mode = stereoMode;
 
+        if (CServiceBroker::GetWinSystem()->IsDoviDisplay()) {
+            if (m_bMatroska)
+            {
+              int size;
+              uint8_t* side_data = av_stream_get_side_data(pStream, AV_PKT_DATA_DOVI_CONF, &size);
+              if (size > 0 && side_data)
+              {
+                auto dovi = reinterpret_cast<AVDOVIDecoderConfigurationRecord*>(side_data);
+                if (dovi->dv_profile > 7) {
+                  pStream->codecpar->codec_tag = MKTAG('d', 'v', 'v', 'C');
+                } else if (dovi->dv_profile == 5) {
+                  pStream->codecpar->codec_tag  = MKTAG('d', 'v', 'h', 'e'); ///FIXME
+                } else {
+                  pStream->codecpar->codec_tag = MKTAG('d', 'v', 'c', 'C');
+                }
+                CLog::Log(LOGINFO, "%s - mkv profile %d, tag %s", __FUNCTION__, dovi->dv_profile, av_fourcc2str(pStream->codecpar->codec_tag));
+              }
+            }
+
+            if (m_bMp4) {
+                int size;
+                uint8_t* side_data = av_stream_get_side_data(pStream, AV_PKT_DATA_DOVI_CONF, &size);
+                if (size > 0 && side_data) {
+                    auto dovi = reinterpret_cast<AVDOVIDecoderConfigurationRecord*>(side_data);
+                    if (dovi->dv_profile > 7) {
+                        if (pStream->codecpar->codec_tag == MKTAG('h','e','v','1')) {
+                            pStream->codecpar->codec_tag  = MKTAG('d', 'v', 'h', 'e');
+                        }
+                        CLog::Log(LOGINFO, "%s - mp4 profile %d, tag %s", __FUNCTION__, dovi->dv_profile, av_fourcc2str(pStream->codecpar->codec_tag));
+                    }
+                }
+            }
+        }
 
         if (m_pInput->IsStreamType(DVDSTREAM_TYPE_DVD))
         {

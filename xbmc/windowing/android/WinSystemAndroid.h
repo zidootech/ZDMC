@@ -58,6 +58,7 @@ public:
   // winevents override
   bool MessagePump() override;
   bool IsHDRDisplay() override;
+  bool IsDoviDisplay() override;
 
 protected:
   std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> GetOSScreenSaverImpl() override;

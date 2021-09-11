@@ -319,6 +319,11 @@ bool CWinSystemAndroid::IsHDRDisplay()
   return m_android->IsHDRDisplay();
 }
 
+bool CWinSystemAndroid::IsDoviDisplay()
+{
+  return m_android->IsDoviDisplay();
+}
+
 std::unique_ptr<WINDOWING::IOSScreenSaver> CWinSystemAndroid::GetOSScreenSaverImpl()
 {
   std::unique_ptr<KODI::WINDOWING::IOSScreenSaver> ret(new COSScreenSaverAndroid());
