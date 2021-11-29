@@ -697,6 +697,10 @@ std::string CSysInfo::GetOsPrettyNameWithVersion(void)
       osNameVer.append("10");
       appendWindows10NameVersion(osNameVer);
       break;
+    case WindowsVersionWin11:
+      osNameVer.append("11");
+      appendWindows10NameVersion(osNameVer);
+      break;
     case WindowsVersionFuture:
       osNameVer.append("Unknown future version");
       break;
@@ -869,6 +873,8 @@ CSysInfo::WindowsVersion CSysInfo::GetWindowsVersion()
         m_WinVer = WindowsVersionWin10_1909;
       else if (osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 && osvi.dwBuildNumber == 19041)
         m_WinVer = WindowsVersionWin10_2004;
+      else if (osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 && osvi.dwBuildNumber >= 22000)
+        m_WinVer = WindowsVersionWin11;
       else if (osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 && osvi.dwBuildNumber > 19041)
         m_WinVer = WindowsVersionWin10_Future;
       /* Insert checks for new Windows versions here */
@@ -929,8 +935,9 @@ int CSysInfo::GetKernelBitness(void)
     if (uname(&un) == 0)
     {
       std::string machine(un.machine);
-      if (machine == "x86_64" || machine == "amd64" || machine == "arm64" || machine == "aarch64" || machine == "ppc64" ||
-          machine == "ia64" || machine == "mips64" || machine == "s390x")
+      if (machine == "x86_64" || machine == "amd64" || machine == "arm64" || machine == "aarch64" ||
+          machine == "ppc64" || machine == "ppc64el" || machine == "ppc64le" || machine == "ia64" ||
+          machine == "mips64" || machine == "s390x" || machine == "riscv64")
         kernelBitness = 64;
       else
         kernelBitness = 32;

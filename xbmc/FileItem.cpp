@@ -40,8 +40,10 @@
 #include "pvr/recordings/PVRRecording.h"
 #include "pvr/timers/PVRTimerInfoTag.h"
 #include "settings/AdvancedSettings.h"
+#include "settings/SettingUtils.h"
 #include "settings/Settings.h"
 #include "settings/SettingsComponent.h"
+#include "settings/lib/Setting.h"
 #include "threads/SingleLock.h"
 #include "utils/Archive.h"
 #include "utils/Crc32.h"
@@ -170,7 +172,7 @@ CFileItem::CFileItem(const std::shared_ptr<CPVREpgInfoTag>& tag)
   else if (channel && !channel->IconPath().empty())
     SetArt("icon", channel->IconPath());
   else if (tag->IsRadio())
-    SetArt("icon", "DefaultAudio.png");
+    SetArt("icon", "DefaultMusicSongs.png");
   else
     SetArt("icon", "DefaultTVShows.png");
 
@@ -192,7 +194,7 @@ CFileItem::CFileItem(const std::shared_ptr<CPVRChannel>& channel)
   if (!channel->IconPath().empty())
     SetArt("icon", channel->IconPath());
   else if (channel->IsRadio())
-    SetArt("icon", "DefaultAudio.png");
+    SetArt("icon", "DefaultMusicSongs.png");
   else
     SetArt("icon", "DefaultTVShows.png");
 
@@ -224,7 +226,7 @@ CFileItem::CFileItem(const std::shared_ptr<CPVRRecording>& record)
     if (channel && !channel->IconPath().empty())
       SetArt("icon", channel->IconPath());
     else if (record->IsRadio())
-      SetArt("icon", "DefaultAudio.png");
+      SetArt("icon", "DefaultMusicSongs.png");
     else
       SetArt("icon", "DefaultTVShows.png");
   }
@@ -251,7 +253,7 @@ CFileItem::CFileItem(const std::shared_ptr<CPVRTimerInfoTag>& timer)
   if (!timer->ChannelIcon().empty())
     SetArt("icon", timer->ChannelIcon());
   else if (timer->m_bIsRadio)
-    SetArt("icon", "DefaultAudio.png");
+    SetArt("icon", "DefaultMusicSongs.png");
   else
     SetArt("icon", "DefaultTVShows.png");
 
@@ -1048,7 +1050,8 @@ bool CFileItem::IsFileFolder(EFileFolderType types) const
   }
 
   if (CServiceBroker::IsBinaryAddonCacheUp() &&
-      IsType(CServiceBroker::GetFileExtensionProvider().GetFileFolderExtensions().c_str()))
+      IsType(CServiceBroker::GetFileExtensionProvider().GetFileFolderExtensions().c_str()) &&
+      CServiceBroker::GetFileExtensionProvider().CanOperateExtension(m_strPath))
     return true;
 
   if(types & EFILEFOLDER_TYPE_ONBROWSE)
@@ -1353,7 +1356,7 @@ void CFileItem::FillInDefaultIcon()
       if (IsPVRChannel())
       {
         if (GetPVRChannelInfoTag()->IsRadio())
-          SetArt("icon", "DefaultAudio.png");
+          SetArt("icon", "DefaultMusicSongs.png");
         else
           SetArt("icon", "DefaultTVShows.png");
       }
@@ -3261,6 +3264,27 @@ bool CFileItem::SkipLocalArt() const
        || IsLiveTV()
        || IsPVRRecording()
        || IsDVD());
+}
+
+std::string CFileItem::GetThumbHideIfUnwatched(const CFileItem* item) const
+{
+  const std::shared_ptr<CSettingList> setting(std::dynamic_pointer_cast<CSettingList>(
+      CServiceBroker::GetSettingsComponent()->GetSettings()->GetSetting(
+          CSettings::SETTING_VIDEOLIBRARY_SHOWUNWATCHEDPLOTS)));
+  if (setting && item->HasVideoInfoTag() && item->GetVideoInfoTag()->m_type == MediaTypeEpisode &&
+      item->GetVideoInfoTag()->GetPlayCount() == 0 &&
+      !CSettingUtils::FindIntInList(setting,
+                                    CSettings::VIDEOLIBRARY_THUMB_SHOW_UNWATCHED_EPISODE) &&
+      item->HasArt("thumb"))
+  {
+    const std::string fanArt = item->GetArt("fanart");
+    if (fanArt.empty())
+      return "OverlaySpoiler.png";
+    else
+      return fanArt;
+  }
+
+  return item->GetArt("thumb");
 }
 
 std::string CFileItem::FindLocalArt(const std::string &artFile, bool useFolder) const
