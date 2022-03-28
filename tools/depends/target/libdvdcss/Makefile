@@ -21,7 +21,7 @@ ARCHIVE_TOOL := tar --strip-components=1 -xf
 # configuration settings
 config = --prefix=$(PREFIX) --disable-shared --enable-static --with-pic
 
-GITREV=$(shell git ls-remote $(BASE_URL) $(VERSION) | awk '{print $$1}')
+#GITREV=$(shell git ls-remote $(BASE_URL) $(VERSION) | awk '{print $$1}')
 ifeq ($(GITREV),)
   ARCHIVE=$(LIBNAME)-$(VERSION).tar.gz
 else

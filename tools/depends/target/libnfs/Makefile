@@ -9,7 +9,7 @@ COMMITDATE=2020-06-09
 ARCHIVE=$(LIBNAME)-$(VERSION).tar.gz
 
 # configuration settings
-CONFIGURE=./configure --prefix=$(PREFIX) --disable-shared --disable-utils --disable-examples
+CONFIGURE=CFLAGS=-Wno-unused-command-line-argument ./configure --prefix=$(PREFIX) --disable-shared --disable-utils --disable-examples
 
 LIBDYLIB=$(PLATFORM)/lib/.libs/$(LIBNAME).a
 

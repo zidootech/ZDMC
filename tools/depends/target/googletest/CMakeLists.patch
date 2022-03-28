@@ -1,0 +1,11 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -20,6 +20,7 @@ else()
+   endif()
+ endif()
+ 
++add_definitions(-Wno-unused-command-line-argument)
+ enable_testing()
+ 
+ include(CMakeDependentOption)
+

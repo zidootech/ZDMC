@@ -16,7 +16,7 @@ PC_PATH:=$(PC_PATH):/usr/lib/pkgconfig:/usr/lib/$(HOST)/pkgconfig:/usr/share/pkg
 endif
 
 # configuration settings
-CONFIGURE=./configure --prefix=$(PREFIX) --enable-indirect-deps --with-pc-path=$(PC_PATH) --with-internal-glib
+CONFIGURE=./configure --prefix=$(PREFIX) --enable-indirect-deps --with-pc-path=$(PC_PATH) --with-internal-glib --with-libiconv=gnu
 LIBDYLIB=$(PLATFORM)/pkg-config
 
 all: .installed-$(PLATFORM)
