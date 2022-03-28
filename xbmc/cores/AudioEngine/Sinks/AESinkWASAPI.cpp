@@ -12,6 +12,7 @@
 #include "cores/AudioEngine/Utils/AEDeviceInfo.h"
 #include "cores/AudioEngine/Utils/AEUtil.h"
 #include "utils/StringUtils.h"
+#include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
 #include "utils/XTimeUtils.h"
 #include "utils/log.h"
@@ -395,9 +396,12 @@ void CAESinkWASAPI::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool fo
   CAEDeviceInfo        deviceInfo;
   CAEChannelInfo       deviceChannels;
   bool                 add192 = false;
+  bool add48 = false;
 
   WAVEFORMATEXTENSIBLE wfxex = {0};
   HRESULT              hr;
+
+  const bool onlyPT = (CSysInfo::GetWindowsDeviceFamily() == CSysInfo::WindowsDeviceFamily::Xbox);
 
   for(RendererDetail& details : CAESinkFactoryWin::GetRendererDetails())
   {
@@ -544,6 +548,7 @@ void CAESinkWASAPI::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool fo
         deviceInfo.m_streamTypes.push_back(CAEStreamInfo::STREAM_TYPE_DTS_2048);
         deviceInfo.m_streamTypes.push_back(CAEStreamInfo::STREAM_TYPE_DTS_1024);
         deviceInfo.m_streamTypes.push_back(CAEStreamInfo::STREAM_TYPE_DTS_512);
+        add48 = true;
       }
 
       /* Test format Dolby AC3 */
@@ -559,6 +564,7 @@ void CAESinkWASAPI::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool fo
         }
 
         deviceInfo.m_streamTypes.push_back(CAEStreamInfo::STREAM_TYPE_AC3);
+        add48 = true;
       }
 
       /* Test format for PCM format iteration */
@@ -617,6 +623,12 @@ void CAESinkWASAPI::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool fo
           CLog::LogF(LOGINFO, "sample rate 192khz on device \"%s\" seems to be not supported.",
                      details.strDescription);
         }
+        else if (wfxex.Format.nSamplesPerSec == 48000 && add48)
+        {
+          deviceInfo.m_sampleRates.push_back(WASAPISampleRates[j]);
+          CLog::LogF(LOGINFO, "sample rate 48khz on device \"{}\" seems to be not supported.",
+                     details.strDescription);
+        }
       }
       pClient = nullptr;
     }
@@ -633,18 +645,20 @@ void CAESinkWASAPI::EnumerateDevicesEx(AEDeviceInfoList &deviceInfoList, bool fo
 
     /* Store the device info */
     deviceInfo.m_wantsIECPassthrough = true;
+    deviceInfo.m_onlyPassthrough = onlyPT;
 
     if (!deviceInfo.m_streamTypes.empty())
       deviceInfo.m_dataFormats.push_back(AE_FMT_RAW);
 
     deviceInfoList.push_back(deviceInfo);
 
-    if(details.bDefault)
+    if (details.bDefault)
     {
       deviceInfo.m_deviceName = std::string("default");
       deviceInfo.m_displayName = std::string("default");
       deviceInfo.m_displayNameExtra = std::string("");
       deviceInfo.m_wantsIECPassthrough = true;
+      deviceInfo.m_onlyPassthrough = onlyPT;
       deviceInfoList.push_back(deviceInfo);
     }
 
@@ -737,7 +751,7 @@ bool CAESinkWASAPI::InitializeExclusive(AEAudioFormat &format)
   else if (format.m_dataFormat == AE_FMT_RAW) //No sense in trying other formats for passthrough.
     return false;
 
-  CLog::LogF(LOGDEBUG, LOGAUDIO,
+  CLog::LogFC(LOGDEBUG, LOGAUDIO,
              "IsFormatSupported failed (%s) - trying to find a compatible format",
              WASAPIErrToStr(hr));
 
@@ -909,7 +923,7 @@ initialize:
     CLog::Log(LOGDEBUG, "  Enc. Channels   : %d", wfxex_iec61937.dwEncodedChannelCount);
     CLog::Log(LOGDEBUG, "  Enc. Samples/Sec: %d", wfxex_iec61937.dwEncodedSamplesPerSec);
     CLog::Log(LOGDEBUG, "  Channel Mask    : %d", wfxex.dwChannelMask);
-    CLog::Log(LOGDEBUG, "  Periodicty      : %I64d", audioSinkBufferDurationMsec);
+    CLog::Log(LOGDEBUG, "  Periodicty      : {}", audioSinkBufferDurationMsec);
     return false;
   }
 

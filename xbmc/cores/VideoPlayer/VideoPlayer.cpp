@@ -1645,7 +1645,9 @@ void CVideoPlayer::ProcessAudioData(CDemuxStream* pStream, DemuxPacket* pPacket)
   }
 
   m_VideoPlayerAudio->SendMessage(new CDVDMsgDemuxerPacket(pPacket, drop));
-  m_CurrentAudio.packets++;
+
+  if (!drop)
+    m_CurrentAudio.packets++;
 }
 
 void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
@@ -1669,7 +1671,9 @@ void CVideoPlayer::ProcessVideoData(CDemuxStream* pStream, DemuxPacket* pPacket)
     drop = true;
 
   m_VideoPlayerVideo->SendMessage(new CDVDMsgDemuxerPacket(pPacket, drop));
-  m_CurrentVideo.packets++;
+
+  if (!drop)
+    m_CurrentVideo.packets++;
 }
 
 void CVideoPlayer::ProcessSubData(CDemuxStream* pStream, DemuxPacket* pPacket)
@@ -3839,7 +3843,8 @@ void CVideoPlayer::FlushBuffers(double pts, bool accurate, bool sync)
   UpdatePlayState(0);
 
   m_demuxerSpeed = DVD_PLAYSPEED_NORMAL;
-
+  if (m_pDemuxer)
+    m_pDemuxer->SetSpeed(DVD_PLAYSPEED_NORMAL);
 }
 
 // since we call ffmpeg functions to decode, this is being called in the same thread as ::Process() is

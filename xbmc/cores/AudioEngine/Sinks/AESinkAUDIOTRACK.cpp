@@ -34,7 +34,7 @@ using namespace jni;
 // is the max TrueHD package
 const unsigned int MAX_RAW_AUDIO_BUFFER_HD = 61440;
 const unsigned int MAX_RAW_AUDIO_BUFFER = 16384;
-const unsigned int MOVING_AVERAGE_MAX_MEMBERS = 5;
+const unsigned int MOVING_AVERAGE_MAX_MEMBERS = 3;
 const uint64_t UINT64_LOWER_BYTES = 0x00000000FFFFFFFF;
 const uint64_t UINT64_UPPER_BYTES = 0xFFFFFFFF00000000;
 
@@ -503,17 +503,20 @@ bool CAESinkAUDIOTRACK::Initialize(AEAudioFormat &format, std::string &device)
       }
       else
       {
-        // aim at 200 ms buffer and 50 ms periods
+        // aim at 200 ms buffer and 50 ms periods but at least two periods of min_buffer
+        m_min_buffer_size *= 2;
         m_audiotrackbuffer_sec =
             static_cast<double>(m_min_buffer_size) / (m_sink_frameSize * m_sink_sampleRate);
+
+        int c = 2;
         while (m_audiotrackbuffer_sec < 0.15)
         {
           m_min_buffer_size += min_buffer;
+          c++;
           m_audiotrackbuffer_sec =
               static_cast<double>(m_min_buffer_size) / (m_sink_frameSize * m_sink_sampleRate);
         }
-        // division by 4 -> 4 periods into one buffer
-        m_format.m_frames = static_cast<int>(m_min_buffer_size / m_format.m_frameSize) / 4;
+        m_format.m_frames = static_cast<int>(m_min_buffer_size / m_format.m_frameSize) / c;
       }
     }
 
@@ -699,6 +702,13 @@ void CAESinkAUDIOTRACK::GetDelay(AEDelayStatus& status)
   }
 
   delay += m_hw_delay;
+
+  // stop smoothing if we have the new API available
+  // though normal RAW still is really bad delay wise
+  bool rawPt = m_passthrough && !m_info.m_wantsIECPassthrough;
+  if ((m_hw_delay != 0) && !rawPt)
+    m_linearmovingaverage.clear();
+
   if (usesAdvancedLogging)
   {
     CLog::Log(LOGINFO, "Combined Delay: {} ms", delay * 1000);
@@ -745,6 +755,9 @@ unsigned int CAESinkAUDIOTRACK::AddPackets(uint8_t **data, unsigned int frames, 
   uint8_t *buffer = data[0]+offset*m_format.m_frameSize;
   uint8_t *out_buf = buffer;
   int size = frames * m_format.m_frameSize;
+
+  // TrueHD IEC has 12 audio units (half packet and half duration) on CDVDAudioCodecPassthrough
+  double ratio = (m_format.m_streamInfo.m_type == CAEStreamInfo::STREAM_TYPE_TRUEHD) ? 2.0 : 1.0;
 
   // write as many frames of audio as we can fit into our internal buffer.
   int written = 0;
@@ -809,7 +822,12 @@ unsigned int CAESinkAUDIOTRACK::AddPackets(uint8_t **data, unsigned int frames, 
         }
       }
       else
-        m_duration_written += ((double) loop_written / m_format.m_frameSize) / m_format.m_sampleRate;
+      {
+        double duration =
+            (static_cast<double>(loop_written) / m_format.m_frameSize) / m_format.m_sampleRate;
+        duration /= ratio;
+        m_duration_written += duration;
+      }
 
       // just try again to care for fragmentation
       if (written < size)
@@ -964,6 +982,10 @@ void CAESinkAUDIOTRACK::EnumerateDevicesEx(AEDeviceInfoList &list, bool force)
   UpdateAvailablePCMCapabilities();
   UpdateAvailablePassthroughCapabilities(isRaw);
   m_info_raw = m_info;
+
+  // no need to display two PCM sinks - as they are the same
+  if (!list.empty())
+    m_info_raw.m_onlyPassthrough = true;
 
   list.push_back(m_info_raw);
 }

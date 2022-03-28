@@ -1068,6 +1068,7 @@ void CDVDVideoCodecAndroidMediaCodec::Reset()
     // Invalidate our local VideoPicture bits
     m_videobuffer.pts = DVD_NOPTS_VALUE;
 
+    m_dtsShift = DVD_NOPTS_VALUE;
     m_indexInputBuffer = -1;
 
     if (m_bitstream)
